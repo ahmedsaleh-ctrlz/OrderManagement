@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OrderManagement.Domain.Entites
+﻿namespace OrderManagement.Domain.Entites
 {
     public class User
     {
@@ -15,9 +9,10 @@ namespace OrderManagement.Domain.Entites
         public string Email { get; set; } = default!;
         public string PasswordHash { get; set; } = default!;
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsDeleted { get; set; } = false;
-        
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
+
     }
 
 }
