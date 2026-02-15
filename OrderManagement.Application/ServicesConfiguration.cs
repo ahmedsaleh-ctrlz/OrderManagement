@@ -9,6 +9,9 @@ namespace OrderManagement.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IUserServices, UserServices>();
+            services.AddScoped<IWarehouseServices, WarehouseServices>();
+            services.AddScoped<IProductServices, ProductServices>();
+            services.AddScoped<IProductStockServices, ProductStockServices>();
 
             return services;
         }

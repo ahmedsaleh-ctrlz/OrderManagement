@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using OrderManagement.Application.Exceptions;
 
 public class ExceptionMiddleware
@@ -28,6 +29,26 @@ public class ExceptionMiddleware
         {
             await HandleException(context, ex, HttpStatusCode.BadRequest);
         }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogWarning(ex, "Concurrency conflict occurred.");
+
+            await HandleException(
+                context,
+                new Exception("The resource was modified by another request. Please retry."),
+                HttpStatusCode.Conflict);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogWarning(ex, "Database update exception occurred.");
+
+            await HandleException(
+                context,
+                new Exception("Database constraint violation."),
+                HttpStatusCode.Conflict);
+        }
+
+
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled Exception");

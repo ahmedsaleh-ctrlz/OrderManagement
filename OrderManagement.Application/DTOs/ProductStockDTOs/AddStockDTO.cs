@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderManagement.Domain.Entites
+namespace OrderManagement.Application.DTOs.ProductStockDTOs
 {
-    public class ProductStock
+    public class AddStockDTO
     {
-        public int Id { get; set; }
-
+        [Required]
         public int ProductId { get; set; }
-        public Product Product { get; set; } = default!;
 
+        [Required]
         public int WarehouseId { get; set; }
-        
 
+        [Required]
         public int Quantity { get; set; }
-
-        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
-
-        
     }
 }

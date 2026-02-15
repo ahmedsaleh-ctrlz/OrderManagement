@@ -26,6 +26,9 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
             builder.Property(p => p.Price)
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
+            builder.Property(p => p.RowVersion)
+                .IsRowVersion();
+                
         }
 
     }

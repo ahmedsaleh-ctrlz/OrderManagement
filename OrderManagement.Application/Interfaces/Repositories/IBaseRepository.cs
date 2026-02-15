@@ -12,8 +12,9 @@ namespace OrderManagement.Application.Interfaces.Repositories
         Task<T?> GetByIdAsync(int id);
         Task<IEnumerable<T>> GetAllAsync();
         Task AddAsync(T entity);
-        Task<int> SaveChanges();
+        Task<int> SaveChangesAsync();
         Task<bool> ExistsAsync(Expression<Func<T, bool>> expression);
+        Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> expression);
         Task<List<T>> GetPagedAsync(int pageNumber, int pageSize);
         Task<int> CountAsync();
     }

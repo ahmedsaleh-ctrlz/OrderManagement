@@ -27,7 +27,7 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
         {
             return await _context.Set<T>().FindAsync(id);
         }
-        public async Task<int> SaveChanges()
+        public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
         }
@@ -45,6 +45,10 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
         public async Task<int> CountAsync()
         {
             return await _context.Set<T>().CountAsync();
+        }
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _context.Set<T>().FirstOrDefaultAsync(expression);
         }
     }
 }

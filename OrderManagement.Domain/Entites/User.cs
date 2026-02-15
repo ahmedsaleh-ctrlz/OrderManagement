@@ -9,7 +9,7 @@
         public string Email { get; set; } = default!;
         public string PasswordHash { get; set; } = default!;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; } = false;
         public ICollection<Order> Orders { get; set; } = new List<Order>();
 

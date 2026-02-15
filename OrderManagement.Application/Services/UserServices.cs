@@ -46,7 +46,7 @@ namespace OrderManagement.Application.Services
 
         public async Task<int> CreateAsync(CreateUserDto dto)
         {
-            ValidateUserInput(dto.FullName, dto.Email);
+            
             PasswordValidator.Validate(dto.Password);
 
             var exists = await _repo.ExistsAsync(u => u.Email == dto.Email);
@@ -61,15 +61,13 @@ namespace OrderManagement.Application.Services
             };
 
             await _repo.AddAsync(user);
-            await _repo.SaveChanges();
+            await _repo.SaveChangesAsync();
 
             return user.Id;
         }
 
         public async Task<UserDTO> GetByIdAsync(int id)
         {
-            IDValidator.ValidateID(id);
-
             var user = await _repo.GetByIdAsync(id);
             if (user is null)
                 throw new NotFoundException("User not found");
@@ -79,9 +77,6 @@ namespace OrderManagement.Application.Services
 
         public async Task UpdateAsync(int id, UpdateUserDTO dto)
         {
-            IDValidator.ValidateID(id);
-            ValidateUserInput(dto.FullName, dto.Email);
-
             var user = await _repo.GetByIdAsync(id);
             if (user is null)
                 throw new NotFoundException("User not found");
@@ -95,12 +90,11 @@ namespace OrderManagement.Application.Services
             user.FullName = dto.FullName;
             user.Email = dto.Email;
 
-            await _repo.SaveChanges();
+            await _repo.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            IDValidator.ValidateID(id);
 
             var user = await _repo.GetByIdAsync(id);
             if (user is null)
@@ -108,16 +102,11 @@ namespace OrderManagement.Application.Services
 
             user.IsDeleted = true;
 
-            await _repo.SaveChanges();
+            await _repo.SaveChangesAsync();
         }
 
 
-        //Helper Methods    
-        private void ValidateUserInput(string name, string email)
-        {
-            NameValidator.Validate(name);
-            EmailValidator.Validate(email);
-        }
+        
 
         private static UserDTO MapToDto(User user)
         {

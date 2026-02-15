@@ -15,9 +15,10 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
             builder.HasIndex(ps => new { ps.ProductId, ps.WarehouseId })
                 .IsUnique();
 
-            builder.HasOne<Product>()
-                .WithMany()
-                .HasForeignKey(ps => ps.ProductId);
+            builder.HasOne(ps => ps.Product)
+            .WithMany()
+            .HasForeignKey(ps => ps.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne<Warehouse>()
                 .WithMany()

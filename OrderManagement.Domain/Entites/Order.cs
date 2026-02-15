@@ -13,7 +13,7 @@ namespace OrderManagement.Domain.Entites
 
         public OrderStatus Status { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 }

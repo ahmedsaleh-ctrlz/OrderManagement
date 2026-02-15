@@ -18,8 +18,7 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
                 .HasMaxLength(100);
             builder.HasIndex(u => u.Email)
             .IsUnique();
-            builder.Property(options => options.CreatedAt)
-                .HasDefaultValueSql("GETDATE()");
+            
 
         }
     }
