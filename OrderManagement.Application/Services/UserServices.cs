@@ -6,13 +6,14 @@ using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Application.Interfaces.Services;
 using OrderManagement.Domain.Entites;
 
+
 namespace OrderManagement.Application.Services
 {
     public class UserServices : IUserServices
     {
-        private readonly IBaseRepository<User> _repo;
+        private readonly IUserRepository _repo;
 
-        public UserServices(IBaseRepository<User> repo)
+        public UserServices(IUserRepository repo)
         {
             _repo = repo;
         }
@@ -92,16 +93,20 @@ namespace OrderManagement.Application.Services
 
             await _repo.SaveChangesAsync();
         }
-
+        public async Task<UserDTO> GetByEmailAsync(string email) 
+        {
+            var user = await _repo.FirstOrDefaultAsync(u => u.Email == email);
+            if (user is null)
+                throw new NotFoundException("User not found");
+            return MapToDto(user);
+        }
         public async Task DeleteAsync(int id)
         {
 
             var user = await _repo.GetByIdAsync(id);
             if (user is null)
                 throw new NotFoundException("User not found");
-
             user.IsDeleted = true;
-
             await _repo.SaveChangesAsync();
         }
 

@@ -1,117 +1,92 @@
-﻿using OrderManagement.Application.Common.Validator;
-using OrderManagement.Application.DTOs.Paging;
+﻿using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.WarehouseDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Application.Interfaces.Services;
 using OrderManagement.Domain.Entites;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OrderManagement.Application.Services
+public class WarehouseServices : IWarehouseServices
 {
-    public class WarehouseServices : IWarehouseServices
+    private readonly IWarehouseRepository _repo;
+
+    public WarehouseServices(IWarehouseRepository repo)
     {
-        private readonly IBaseRepository<Warehouse> _repo;
+        _repo = repo;
+    }
 
-        public WarehouseServices(IBaseRepository<Warehouse> repo)
+    public async Task<int> CreateAsync(CreateWarehouseDTO dto)
+    {
+        var warehouse = new Warehouse
         {
-            _repo = repo;
-        }
+            Name = dto.Name,
+            Location = dto.Location
+        };
 
-        public async Task<PagedResult<WarehouseDTO>> GetPagedAsync(PaginationParams param)
+        await _repo.AddAsync(warehouse);
+        await _repo.SaveChangesAsync();
+
+        return warehouse.Id;
+    }
+
+    public async Task<WarehouseDTO?> GetByIdAsync(int id)
+    {
+        var warehouse = await _repo.GetByIdAsync(id);
+        if (warehouse is null)
+            throw new NotFoundException("Warehouse not found");
+
+        return MapToDto(warehouse);
+    }
+
+    public async Task<PagedResult<WarehouseDTO>> GetPagedAsync(PaginationParams param)
+    {
+        if (param.PageNumber <= 0)
+            param.PageNumber = 1;
+
+        if (param.PageSize <= 0 || param.PageSize > 100)
+            param.PageSize = 10;
+
+        var warehouses = await _repo.GetPagedAsync(param.PageNumber, param.PageSize);
+        var totalCount = await _repo.CountAsync();
+
+        return new PagedResult<WarehouseDTO>
         {
-            if (param.PageNumber <= 0)
-                param.PageNumber = 1;
+            Items = warehouses.Select(MapToDto).ToList(),
+            TotalCount = totalCount,
+            PageNumber = param.PageNumber,
+            PageSize = param.PageSize
+        };
+    }
 
-            if (param.PageSize <= 0 || param.PageSize > 100)
-                param.PageSize = 10;
+    public async Task UpdateAsync(int id, UpdateWarehouseDTO dto)
+    {
+        var warehouse = await _repo.GetByIdAsync(id);
+        if (warehouse is null)
+            throw new NotFoundException("Warehouse not found");
 
-            var warehouses = await _repo.GetPagedAsync(param.PageNumber, param.PageSize);
-            var totalCount = await _repo.CountAsync();
+        warehouse.Name = dto.Name;
+        warehouse.Location = dto.Location;
 
-            var mapped = warehouses.Select(MapToDto).ToList();
+        await _repo.SaveChangesAsync();
+    }
 
-            return new PagedResult<WarehouseDTO>
-            {
-                Items = mapped,
-                TotalCount = totalCount,
-                PageNumber = param.PageNumber,
-                PageSize = param.PageSize
-            };
-        }
+    public async Task DeleteAsync(int id)
+    {
+        var warehouse = await _repo.GetByIdAsync(id);
+        if (warehouse is null)
+            throw new NotFoundException("Warehouse not found");
 
-        public async Task<int> CreateAsync(CreateWarehouseDTO dto)
+        warehouse.IsDeleted = true;
+
+        await _repo.SaveChangesAsync();
+    }
+
+    private static WarehouseDTO MapToDto(Warehouse warehouse)
+    {
+        return new WarehouseDTO
         {
-            if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new BadRequestException("Warehouse name is required");
-
-            if (string.IsNullOrWhiteSpace(dto.Location))
-                throw new BadRequestException("Location is required");
-
-            var warehouse = new Warehouse
-            {
-                Name = dto.Name,
-                Location = dto.Location
-            };
-
-            await _repo.AddAsync(warehouse);
-            await _repo.SaveChangesAsync();
-
-            return warehouse.Id;
-        }
-
-        public async Task<WarehouseDTO> GetByIdAsync(int id)
-        {
-           
-
-            var warehouse = await _repo.GetByIdAsync(id);
-            if (warehouse is null)
-                throw new NotFoundException("Warehouse not found");
-
-            return MapToDto(warehouse);
-        }
-
-        public async Task UpdateAsync(int id, UpdateWarehouseDTO dto)
-        {
-           
-
-            var warehouse = await _repo.GetByIdAsync(id);
-            if (warehouse is null)
-                throw new NotFoundException("Warehouse not found");
-
-            warehouse.Name = dto.Name;
-            warehouse.Location = dto.Location;
-
-            await _repo.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-
-            var warehouse = await _repo.GetByIdAsync(id);
-            if (warehouse is null)
-                throw new NotFoundException("Warehouse not found");
-
-            // Consider stock quantity check here before deletion if needed
-
-            warehouse.IsDeleted = true;
-
-            await _repo.SaveChangesAsync();
-        }
-
-        private static WarehouseDTO MapToDto(Warehouse warehouse)
-        {
-            return new WarehouseDTO
-            {
-                Id = warehouse.Id,
-                Name = warehouse.Name,
-                Location = warehouse.Location
-            };
-        }
-
+            Id = warehouse.Id,
+            Name = warehouse.Name,
+            Location = warehouse.Location
+        };
     }
 }

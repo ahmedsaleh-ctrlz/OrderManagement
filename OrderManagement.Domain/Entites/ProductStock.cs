@@ -15,7 +15,6 @@ namespace OrderManagement.Domain.Entites
 
         public int WarehouseId { get; set; }
         
-
         public int Quantity { get; set; }
 
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;

@@ -34,7 +34,13 @@ namespace OrderMangment.Api.Controllers
             return Ok(user);
         }
 
-       
+        [HttpGet("email/{email}")]
+        public async Task<IActionResult> GetByEmail(string email) 
+        {
+            var user = await _userService.GetByEmailAsync(email);
+            return Ok(user);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param)
         {

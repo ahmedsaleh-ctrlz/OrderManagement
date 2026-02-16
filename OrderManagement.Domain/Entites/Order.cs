@@ -15,5 +15,7 @@ namespace OrderManagement.Domain.Entites
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+
+        public byte[] RowVersion { get; set; } = default!;  
     }
 }

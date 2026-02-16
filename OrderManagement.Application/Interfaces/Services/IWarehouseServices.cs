@@ -16,6 +16,9 @@ namespace OrderManagement.Application.Interfaces.Services
         Task<WarehouseDTO?> GetByIdAsync(int id);
         Task<PagedResult<WarehouseDTO>> GetPagedAsync(PaginationParams param);
         Task UpdateAsync(int id, UpdateWarehouseDTO dto);
+       
         Task DeleteAsync(int id);
+
+        
     }
 }

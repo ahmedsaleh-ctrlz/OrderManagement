@@ -11,6 +11,7 @@ namespace OrderManagement.Domain.Enums
         Pending,
         Confirmed,
         Shipped,
-        Cancelled
+        Cancelled,
+        Completed
     }
 }

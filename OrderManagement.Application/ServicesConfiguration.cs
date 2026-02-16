@@ -12,6 +12,8 @@ namespace OrderManagement.Application
             services.AddScoped<IWarehouseServices, WarehouseServices>();
             services.AddScoped<IProductServices, ProductServices>();
             services.AddScoped<IProductStockServices, ProductStockServices>();
+            services.AddScoped<IOrderServices, OrderServices>();
+
 
             return services;
         }

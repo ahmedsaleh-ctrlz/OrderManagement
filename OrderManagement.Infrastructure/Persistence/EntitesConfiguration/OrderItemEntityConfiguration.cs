@@ -22,11 +22,6 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
             builder.Property(oi => oi.Quantity)
                 .IsRequired();
 
-            builder.HasOne<Order>()
-                .WithMany(o => o.OrderItems)
-                .HasForeignKey(oi => oi.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasOne<Product>()
                 .WithMany()
                 .HasForeignKey(oi => oi.ProductId);

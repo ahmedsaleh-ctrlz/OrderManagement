@@ -11,12 +11,16 @@ namespace OrderManagement.Domain.Entites
         public int Id { get; set; }
 
         public int OrderId { get; set; }
-        
-        public int ProductId { get; set; } 
+        public Order Order { get; set; } = default!;
+
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = default!; // For display purposes, we store the product name at the time of order
 
         public int Quantity { get; set; }
 
         public decimal UnitPrice { get; set; }
+        
+
     }
 
 }

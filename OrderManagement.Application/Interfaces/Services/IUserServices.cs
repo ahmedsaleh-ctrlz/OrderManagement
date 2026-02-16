@@ -16,6 +16,7 @@ namespace OrderManagement.Application.Interfaces.Services
         Task<PagedResult<UserDTO>> GetPagedAsync(PaginationParams param);
         Task UpdateAsync(int id, UpdateUserDTO dto);
         Task DeleteAsync(int id);
+        Task<UserDTO?> GetByEmailAsync(string email);
 
     }
 }

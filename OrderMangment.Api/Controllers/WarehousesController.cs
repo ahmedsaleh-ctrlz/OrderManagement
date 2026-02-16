@@ -11,10 +11,12 @@ namespace OrderManagementApi.Controllers
     public class WarehousesController : ControllerBase
     {
         private readonly IWarehouseServices _warehouseService;
+        private readonly IProductStockServices _productStockService;
 
-        public WarehousesController(IWarehouseServices warehouseService)
+        public WarehousesController(IWarehouseServices warehouseService,IProductStockServices productStockServices)
         {
             _warehouseService = warehouseService;
+            _productStockService = productStockServices;
         }
 
         [HttpPost]
@@ -35,7 +37,7 @@ namespace OrderManagementApi.Controllers
             return Ok(warehouse);
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param)
         {
@@ -43,7 +45,7 @@ namespace OrderManagementApi.Controllers
             return Ok(result);
         }
 
-        
+
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateWarehouseDTO DTO)
         {
@@ -51,13 +53,22 @@ namespace OrderManagementApi.Controllers
             return NoContent();
         }
 
-       
+
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _warehouseService.DeleteAsync(id);
             return NoContent();
         }
+
+
+        [HttpGet("AllProduct")]
+        public async Task<IActionResult> GetAllProductsInWarehouse(int warehouseId)
+        {
+            var products = await _productStockService.GetStocksByWarehouseAsync(warehouseId);
+            return Ok(products);
+        }
+
     }
 }
 
