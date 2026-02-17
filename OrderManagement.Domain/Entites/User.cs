@@ -1,4 +1,6 @@
-﻿namespace OrderManagement.Domain.Entites
+﻿using OrderManagement.Domain.Enums;
+
+namespace OrderManagement.Domain.Entites
 {
     public class User
     {
@@ -11,6 +13,7 @@
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; } = false;
+        public UserRole Role { get; set; } 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
 
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.ProductDTOs;
@@ -8,6 +9,7 @@ namespace OrderManagementApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IProductServices _productService;
@@ -17,6 +19,7 @@ namespace OrderManagementApi.Controllers
             _productService = productService;
         }
 
+        
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateProductDTO DTO)
         {

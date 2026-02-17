@@ -38,6 +38,7 @@ namespace OrderManagement.Application.Services
             var order = new Order
             {
                 UserId = dto.UserId,
+                WarehouseId = dto.WarehouseId,
                 Status = OrderStatus.Pending
             };
 
@@ -51,7 +52,7 @@ namespace OrderManagement.Application.Services
 
                 var stock = await _stockRepo.FirstOrDefaultAsync(s =>
                     s.ProductId == item.ProductId &&
-                    s.WarehouseId == item.WarehouseId);
+                    s.WarehouseId == dto.WarehouseId);
 
                 if (stock is null)
                     throw new NotFoundException("Stock not found for selected warehouse.");

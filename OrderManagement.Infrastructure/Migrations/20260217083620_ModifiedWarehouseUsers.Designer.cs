@@ -12,8 +12,8 @@ using OrderManagement.Infrastructure.Persistence;
 namespace OrderManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260215074347_test")]
-    partial class test
+    [Migration("20260217083620_ModifiedWarehouseUsers")]
+    partial class ModifiedWarehouseUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,8 +36,16 @@ namespace OrderManagement.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -45,9 +53,14 @@ namespace OrderManagement.Infrastructure.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("WarehouseId");
 
                     b.ToTable("Orders");
                 });
@@ -65,6 +78,10 @@ namespace OrderManagement.Infrastructure.Migrations
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -180,6 +197,11 @@ namespace OrderManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -214,6 +236,30 @@ namespace OrderManagement.Infrastructure.Migrations
                     b.ToTable("Warehouses");
                 });
 
+            modelBuilder.Entity("OrderManagement.Domain.Entites.WarehouseUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("WarehouseUsers");
+                });
+
             modelBuilder.Entity("OrderManagement.Domain.Entites.Order", b =>
                 {
                     b.HasOne("OrderManagement.Domain.Entites.User", "User")
@@ -222,15 +268,23 @@ namespace OrderManagement.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("OrderManagement.Domain.Entites.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("User");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("OrderManagement.Domain.Entites.OrderItem", b =>
                 {
-                    b.HasOne("OrderManagement.Domain.Entites.Order", null)
+                    b.HasOne("OrderManagement.Domain.Entites.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("OrderManagement.Domain.Entites.Product", null)
@@ -238,6 +292,8 @@ namespace OrderManagement.Infrastructure.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("OrderManagement.Domain.Entites.ProductStock", b =>
@@ -255,6 +311,25 @@ namespace OrderManagement.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OrderManagement.Domain.Entites.WarehouseUser", b =>
+                {
+                    b.HasOne("OrderManagement.Domain.Entites.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OrderManagement.Domain.Entites.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("OrderManagement.Domain.Entites.Order", b =>

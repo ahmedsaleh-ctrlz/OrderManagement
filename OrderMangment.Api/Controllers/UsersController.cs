@@ -17,15 +17,6 @@ namespace OrderMangment.Api.Controllers
             _userService = userService;
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateUserDto dto)
-        {
-            var id = await _userService.CreateAsync(dto);
-
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id },
-                new { Id = id });
-        }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)

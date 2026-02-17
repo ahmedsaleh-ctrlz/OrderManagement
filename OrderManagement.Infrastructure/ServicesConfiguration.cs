@@ -21,6 +21,7 @@ namespace OrderManagement.Infrastructure
             services.AddScoped<IProductStockRepository, ProductStockRepository>();
             services.AddScoped<IWarehouseRepository, WarehouseRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IWarehouseUserRepository, WarehouseUserRepository>();
             return services;
         }
     }

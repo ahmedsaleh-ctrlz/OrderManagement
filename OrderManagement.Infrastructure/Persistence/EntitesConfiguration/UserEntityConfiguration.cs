@@ -18,7 +18,15 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
                 .HasMaxLength(100);
             builder.HasIndex(u => u.Email)
             .IsUnique();
-            
+
+            builder.Property(u => u.PasswordHash)
+             .IsRequired();
+
+            builder.Property(u => u.Role)
+                   .HasConversion<string>()
+                   .HasMaxLength(50)
+                   .IsRequired();
+
 
         }
     }

@@ -13,6 +13,10 @@ namespace OrderManagement.Domain.Entites
 
         public OrderStatus Status { get; set; }
 
+
+        public int WarehouseId { get; set; }
+        public Warehouse Warehouse { get; set; } = default!;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
