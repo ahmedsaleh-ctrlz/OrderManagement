@@ -3,11 +3,11 @@ using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.UserDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
-using OrderManagement.Application.Interfaces.Services;
+
 using OrderManagement.Domain.Entites;
 
 
-namespace OrderManagement.Application.Services
+namespace OrderManagement.Application.Services.Users
 {
     public class UserServices : IUserServices
     {
@@ -47,7 +47,7 @@ namespace OrderManagement.Application.Services
 
         public async Task<int> CreateAsync(CreateUserDto dto)
         {
-            
+
             PasswordValidator.Validate(dto.Password);
 
             var exists = await _repo.ExistsAsync(u => u.Email == dto.Email);
@@ -93,7 +93,7 @@ namespace OrderManagement.Application.Services
 
             await _repo.SaveChangesAsync();
         }
-        public async Task<UserDTO> GetByEmailAsync(string email) 
+        public async Task<UserDTO> GetByEmailAsync(string email)
         {
             var user = await _repo.FirstOrDefaultAsync(u => u.Email == email);
             if (user is null)
@@ -111,7 +111,7 @@ namespace OrderManagement.Application.Services
         }
 
 
-        
+
 
         private static UserDTO MapToDto(User user)
         {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderManagement.Application.Interfaces.Services
+namespace OrderManagement.Application.Services.UsersManagement
 {
     public interface IUserManagementService
     {

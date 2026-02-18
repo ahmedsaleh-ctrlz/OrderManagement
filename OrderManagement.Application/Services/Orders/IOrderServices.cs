@@ -1,16 +1,13 @@
 ﻿using OrderManagement.Application.DTOs.OrderDTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OrderManagement.Application.DTOs.Paging;
 
-namespace OrderManagement.Application.Interfaces.Services
+namespace OrderManagement.Application.Services.Orders
 {
     public interface IOrderServices
     {
         Task<int> CreateAsync(CreateOrderDTO dto);
         Task<OrderDTO> GetByIdAsync(int id);
+        Task<PagedResult<OrderDTO>> GetPagedAsync(PaginationParams param);
         Task ConfirmAsync(int id);
         Task CancelAsync(int id);
         Task ShipAsync(int id);

@@ -1,7 +1,6 @@
 ﻿using OrderManagement.Application.DTOs.UserMangemanetDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
-using OrderManagement.Application.Interfaces.Services;
 using OrderManagement.Domain.Entites;
 using OrderManagement.Domain.Enums;
 using System;
@@ -10,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderManagement.Application.Services
+namespace OrderManagement.Application.Services.UsersManagement
 {
     public class UserManagementService : IUserManagementService
     {
@@ -28,7 +27,7 @@ namespace OrderManagement.Application.Services
             _warehouseRepo = warehouseRepo;
         }
 
-       
+
         public async Task CreateWarehouseAdminAsync(CreateAdminDTO dto)
         {
             var warehouse = await _warehouseRepo.GetByIdAsync(dto.WarehouseId);
@@ -60,7 +59,7 @@ namespace OrderManagement.Application.Services
             await _warehouseUserRepo.SaveChangesAsync();
         }
 
-        
+
         public async Task CreateEmployeeAsync(
             CreateEmployeeDTO dto,
             int currentUserId,

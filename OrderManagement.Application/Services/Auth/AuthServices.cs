@@ -4,7 +4,7 @@ using OrderManagement.Application.Common.Validator;
 using OrderManagement.Application.DTOs.AuthDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
-using OrderManagement.Application.Interfaces.Services;
+using OrderManagement.Application.Services.Auth;
 using OrderManagement.Domain.Entites;
 using OrderManagement.Domain.Enums;
 using System.IdentityModel.Tokens.Jwt;

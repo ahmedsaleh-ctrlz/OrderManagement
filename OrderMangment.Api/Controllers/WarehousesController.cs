@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.WarehouseDTOs;
-using OrderManagement.Application.Interfaces.Services;
+using OrderManagement.Application.Services.ProductStocks;
+using OrderManagement.Application.Services.Warhouses;
 
 namespace OrderManagementApi.Controllers
 {

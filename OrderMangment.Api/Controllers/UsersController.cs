@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.DTOs.UserDTOs;
-using OrderManagement.Application.Interfaces.Services;
 using OrderManagement.Application.DTOs.Paging;
+using OrderManagement.Application.Services.Users;
 
 namespace OrderMangment.Api.Controllers
 {

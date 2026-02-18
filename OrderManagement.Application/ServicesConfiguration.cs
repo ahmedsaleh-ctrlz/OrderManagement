@@ -1,6 +1,12 @@
-﻿using OrderManagement.Application.Interfaces.Services;
-using OrderManagement.Application.Services;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using OrderManagement.Application.Services.Auth;
+using OrderManagement.Application.Services.Users;
+using OrderManagement.Application.Services.Orders;
+using OrderManagement.Application.Services.Products;
+using OrderManagement.Application.Services.ProductStocks;
+using OrderManagement.Application.Services.UsersManagement;
+using OrderManagement.Application.Services.Warhouses;
+using OrderManagement.Application.Services.WarhouseUsers;
 
 namespace OrderManagement.Application
 {

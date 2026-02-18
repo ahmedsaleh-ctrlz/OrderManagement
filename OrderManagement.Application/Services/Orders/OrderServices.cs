@@ -2,13 +2,14 @@
 using OrderManagement.Application.DTOs.OrderDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
-using OrderManagement.Application.Interfaces.Services;
 using OrderManagement.Domain.Entites;
 using OrderManagement.Domain.Enums;
+using OrderManagement.Application.DTOs.Paging;
 
-namespace OrderManagement.Application.Services
+
+namespace OrderManagement.Application.Services.Orders
 {
-    
+
 
     public class OrderServices : IOrderServices
     {
@@ -27,6 +28,26 @@ namespace OrderManagement.Application.Services
             _userRepo = userRepo;
             _productRepo = productRepo;
             _stockRepo = stockRepo;
+        }
+
+        public async Task<PagedResult<OrderDTO>> GetPagedAsync(PaginationParams param)
+        {
+            if (param.PageNumber <= 0)
+                param.PageNumber = 1;
+
+            if (param.PageSize <= 0 || param.PageSize > 100)
+                param.PageSize = 10;
+
+            var orders = await _orderRepo.GetPagedAsync(param.PageNumber, param.PageSize);
+            var totalCount = await _orderRepo.CountAsync();
+
+            return new PagedResult<OrderDTO>
+            {
+                Items = orders.Select(MapToDto).ToList(),
+                TotalCount = totalCount,
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
+            };
         }
 
         public async Task<int> CreateAsync(CreateOrderDTO dto)
@@ -60,15 +81,15 @@ namespace OrderManagement.Application.Services
                 if (stock.Quantity < item.Quantity)
                     throw new BadRequestException("Not enough stock available.");
 
-               
-                
+
+
                 stock.LastUpdated = DateTime.UtcNow;
 
                 var orderItem = new OrderItem
                 {
                     ProductId = product.Id,
-                    ProductName = product.Name,     
-                    UnitPrice = product.Price,      
+                    ProductName = product.Name,
+                    UnitPrice = product.Price,
                     Quantity = item.Quantity
                 };
 
@@ -80,33 +101,17 @@ namespace OrderManagement.Application.Services
             order.TotalAmount = total;
 
             await _orderRepo.AddAsync(order);
-            await _orderRepo.SaveChangesAsync(); 
+            await _orderRepo.SaveChangesAsync();
 
             return order.Id;
         }
 
-     
         public async Task<OrderDTO> GetByIdAsync(int id)
         {
             var order = await _orderRepo.GetWithItemsAsync(id);
             if (order is null)
                 throw new NotFoundException("Order not found.");
-
-            return new OrderDTO
-            {
-                Id = order.Id,
-                UserId = order.UserId,
-                TotalAmount = order.TotalAmount,
-                Status = order.Status.ToString(),
-                CreatedAt = order.CreatedAt,
-                Items = order.OrderItems.Select(i => new OrderItemDTO
-                {
-                    ProductId = i.ProductId,
-                    ProductName = i.ProductName,
-                    UnitPrice = i.UnitPrice,
-                    Quantity = i.Quantity
-                }).ToList()
-            };
+            return MapToDto(order);
         }
         public async Task ConfirmAsync(int orderId)
         {
@@ -134,9 +139,6 @@ namespace OrderManagement.Application.Services
 
             await _orderRepo.SaveChangesAsync();
         }
-
-
-
 
         public async Task CancelAsync(int orderId)
         {
@@ -167,9 +169,6 @@ namespace OrderManagement.Application.Services
 
             await _orderRepo.SaveChangesAsync();
         }
-
-
-
 
         public async Task ShipAsync(int orderId)
         {
@@ -202,8 +201,26 @@ namespace OrderManagement.Application.Services
         }
 
 
+        //Helper Methods
+        public OrderDTO MapToDto(Order order)
+        {
+            return new OrderDTO
+            {
+                Id = order.Id,
+                UserId = order.UserId,
+                TotalAmount = order.TotalAmount,
+                Status = order.Status.ToString(),
+                CreatedAt = order.CreatedAt,
+                Items = order.OrderItems.Select(i => new OrderItemDTO
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.ProductName,
+                    UnitPrice = i.UnitPrice,
+                    Quantity = i.Quantity
+                }).ToList()
+            };
 
+        }
     }
-
 
 }

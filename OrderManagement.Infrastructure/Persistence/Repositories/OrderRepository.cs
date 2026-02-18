@@ -36,6 +36,19 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
+        public async Task<int> CountAsync()
+        {
+            return await _context.Orders.CountAsync();
+        }
+        public async Task<List<Order>> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

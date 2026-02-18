@@ -14,5 +14,8 @@ namespace OrderManagement.Application.Interfaces.Repositories
         Task<Order?> GetWithItemsAsync(int id);
         Task<bool> ExistsAsync(Expression<Func<Order, bool>> expression);
         Task SaveChangesAsync();
+
+        Task<int> CountAsync();
+        Task<List<Order>> GetPagedAsync(int pageNumber, int pageSize);
     }
 }

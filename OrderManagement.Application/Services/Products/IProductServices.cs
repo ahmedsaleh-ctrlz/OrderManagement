@@ -1,12 +1,7 @@
 ﻿using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.ProductDTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OrderManagement.Application.Interfaces.Services
+namespace OrderManagement.Application.Services.Products
 {
     public interface IProductServices
     {

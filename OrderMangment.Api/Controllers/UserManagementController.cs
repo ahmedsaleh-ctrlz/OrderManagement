@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.DTOs.UserMangemanetDTOs;
-using OrderManagement.Application.Interfaces.Services;
+using OrderManagement.Application.Services.UsersManagement;
 using System.Security.Claims;
 
 namespace OrderManagementApi.Controllers
