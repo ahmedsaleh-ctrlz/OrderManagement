@@ -12,7 +12,7 @@ namespace OrderManagement.Application.Interfaces.Repositories
         Task AddAsync(ProductStock stock);
         Task<ProductStock> FirstOrDefaultAsync(Expression<Func<ProductStock, bool>> expression);
 
-        Task<List<ProductStock>> GetByWarehouseIdAsync(int warehouseId);
+        IQueryable<ProductStock> GetQueryable();
 
         Task SaveChangesAsync();
     }

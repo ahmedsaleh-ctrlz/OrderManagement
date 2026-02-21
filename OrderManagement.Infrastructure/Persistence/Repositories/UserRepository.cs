@@ -46,6 +46,7 @@ public class UserRepository : IUserRepository
             .OrderBy(u => u.Id)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .AsNoTracking()
             .ToListAsync();
     }
 

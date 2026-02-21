@@ -16,11 +16,11 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
                 .IsUnique();
 
             builder.HasOne(ps => ps.Product)
-            .WithMany()
+            .WithMany(p=>p.ProductStocks)
             .HasForeignKey(ps => ps.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<Warehouse>()
+            builder.HasOne(ps=> ps.Warehouse)
                 .WithMany()
                 .HasForeignKey(ps => ps.WarehouseId);
 

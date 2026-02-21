@@ -9,8 +9,8 @@ namespace OrderManagement.Domain.Enums
     public enum UserRole
     {
         Customer = 1,
-        WarehouseAdmin = 2,
-        WarehouseEmployee = 3,
+        WarehouseEmployee = 2,
+        WarehouseAdmin = 3,
         SuperAdmin = 4
     }
 }

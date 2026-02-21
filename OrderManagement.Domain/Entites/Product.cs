@@ -17,7 +17,7 @@ namespace OrderManagement.Domain.Entites
         public decimal Price { get; set; }
 
         public bool IsDeleted { get; set; }
-
+        public ICollection<ProductStock> ProductStocks { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public byte[] RowVersion { get; set; } = default!;
 

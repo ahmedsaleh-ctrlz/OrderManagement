@@ -15,5 +15,7 @@ namespace OrderManagement.Domain.Entites
         public string Location { get; set; } = default!;
 
         public bool IsDeleted { get; set; }
+
+        public List<ProductStock> ProductStocks { get; set; } = new List<ProductStock>();   
     }
 }

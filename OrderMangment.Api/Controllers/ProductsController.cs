@@ -31,7 +31,7 @@ namespace OrderManagementApi.Controllers
         /// <response code="201">Product created successfully</response>
         /// <response code="400">Invalid data or duplicate SKU</response>
         /// <response code="403">Forbidden</response>
-        [Authorize(Roles = "WarehouseAdmin,SuperAdmin")]
+        [Authorize(Roles = "WarehouseAdmin")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,7 +65,7 @@ namespace OrderManagementApi.Controllers
         /// Retrieves paginated products.
         /// </summary>
         /// <response code="200">Returns paginated product list</response>
-        [Authorize(Roles = "Customer,WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
+        [Authorize(Roles = "WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param)

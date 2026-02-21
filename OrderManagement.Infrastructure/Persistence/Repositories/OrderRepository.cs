@@ -1,12 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Domain.Entites;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OrderManagement.Infrastructure.Persistence.Repositories
 {
@@ -19,34 +15,49 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
+      
+
         public async Task AddAsync(Order order)
         {
             await _context.Orders.AddAsync(order);
         }
+
+     
 
         public async Task<bool> ExistsAsync(Expression<Func<Order, bool>> predicate)
         {
             return await _context.Orders.AnyAsync(predicate);
         }
 
-        public async Task<Order?> GetWithItemsAsync(int id)
+      
+        public async Task<Order?> GetWithDetailsAsync(int id)
         {
             return await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Warehouse)
                 .Include(o => o.OrderItems)
+                .Include(o => o.StatusHistory)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
+
+
+
+        public IQueryable<Order> GetQueryable()
+        {
+            return _context.Orders
+                .Include(o=>o.User)
+                .Include(o => o.Warehouse)
+                .Include(o => o.OrderItems)
+                .Include(o => o.StatusHistory)
+                .AsNoTracking()
+                .AsQueryable();
+        }
+
+
 
         public async Task<int> CountAsync()
         {
             return await _context.Orders.CountAsync();
-        }
-        public async Task<List<Order>> GetPagedAsync(int pageNumber, int pageSize)
-        {
-            return await _context.Orders
-                .Include(o => o.OrderItems)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
         }
 
         public async Task SaveChangesAsync()

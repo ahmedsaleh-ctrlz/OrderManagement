@@ -27,7 +27,10 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
                 .IsRequired();
             builder.Property(p => p.RowVersion)
                 .IsRowVersion();
-                
+            builder.HasMany(p => p.ProductStocks)
+                .WithOne(ps => ps.Product)
+                .HasForeignKey(ps => ps.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }

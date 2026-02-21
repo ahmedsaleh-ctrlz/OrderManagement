@@ -1,4 +1,6 @@
-﻿using OrderManagement.Application.DTOs.UserMangemanetDTOs;
+﻿using OrderManagement.Application.DTOs.Paging;
+using OrderManagement.Application.DTOs.UserDTOs;
+using OrderManagement.Application.DTOs.UserMangemanetDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,9 @@ namespace OrderManagement.Application.Services.UsersManagement
     {
         Task CreateWarehouseAdminAsync(CreateAdminDTO dto);
 
-        Task CreateEmployeeAsync(CreateEmployeeDTO dto, int currentUserId, int? currentWarehouseId);
+        Task CreateEmployeeAsync(CreateEmployeeDTO dto);
+
+        Task<PagedResult<EmployeesDTO>> GetPagedEmployees(PaginationParams param);
+        
     }
 }

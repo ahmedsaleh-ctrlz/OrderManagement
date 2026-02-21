@@ -70,20 +70,6 @@ namespace OrderManagement.Application.Services.ProductStocks
             return stock.Quantity;
         }
 
-        public async Task<List<WarehouseStockDTO>> GetStocksByWarehouseAsync(int warehouseId)
-        {
-            var stocks = await _repo.GetByWarehouseIdAsync(warehouseId);
-
-            return stocks.Select(ps => new WarehouseStockDTO
-            {
-                ProductName = ps.Product.Name,
-                SKU = ps.Product.SKU,
-                Quantity = ps.Quantity,
-                UnitPrice = ps.Product.Price
-
-            }).ToList();
-        }
-
-
+  
     }
 }

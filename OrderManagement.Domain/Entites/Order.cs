@@ -13,6 +13,8 @@ namespace OrderManagement.Domain.Entites
 
         public OrderStatus Status { get; set; }
 
+        public ICollection<OrderStatusHistory> StatusHistory { get; set; }
+         = new List<OrderStatusHistory>();
 
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; } = default!;

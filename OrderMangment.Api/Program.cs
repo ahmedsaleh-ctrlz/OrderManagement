@@ -6,12 +6,24 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Domain.Entites;
+using OrderManagementApi.Authorization.UserOwnerShip;
+using OrderManagementApi.Authorization.OrderAccess;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -49,6 +61,16 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("UserOwnershipPolicy", policy =>
+        policy.Requirements.Add(new UserDataRequirement()));
+    options.AddPolicy("OrderAccessPolicy", policy =>
+        policy.Requirements.Add(new OrderAccessRequiremnt()));
+});
+
+builder.Services.AddScoped<IAuthorizationHandler, UserDataHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, OrderAccessHandler>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -113,6 +135,10 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddHttpContextAccessor();
+
+
+
 
 var app = builder.Build();
 
@@ -125,7 +151,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowAll");
 app.UseAuthentication();
 
 app.UseAuthorization();

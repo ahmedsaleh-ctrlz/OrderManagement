@@ -11,11 +11,13 @@ namespace OrderManagement.Application.Interfaces.Repositories
     public interface IOrderRepository 
     {
         Task AddAsync(Order order);
-        Task<Order?> GetWithItemsAsync(int id);
+        Task<Order?> GetWithDetailsAsync(int id);
         Task<bool> ExistsAsync(Expression<Func<Order, bool>> expression);
         Task SaveChangesAsync();
 
         Task<int> CountAsync();
-        Task<List<Order>> GetPagedAsync(int pageNumber, int pageSize);
+
+        IQueryable<Order> GetQueryable();
+        //Task<List<Order>> GetPagedWithDetailsAsync(int pageNumber, int pageSize);
     }
 }

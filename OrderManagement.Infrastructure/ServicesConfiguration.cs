@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderManagement.Application.Interfaces.Global;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Infrastructure.Persistence;
 using OrderManagement.Infrastructure.Persistence.Repositories;
@@ -22,6 +23,7 @@ namespace OrderManagement.Infrastructure
             services.AddScoped<IWarehouseRepository, WarehouseRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IWarehouseUserRepository, WarehouseUserRepository>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             return services;
         }
     }

@@ -30,28 +30,17 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<List<Product>> GetPagedAsync(int pageNumber, int pageSize)
-        {
-            return await _context.Products
-                .OrderBy(p => p.Id)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
 
         public async Task<bool> ExistsAsync(Expression<Func<Product, bool>> expression)
         {
             return await _context.Products.AnyAsync(expression);
         }
 
-        public async Task<int> CountAsync()
-        {
-            return await _context.Products.CountAsync();
-        }
 
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+        
     }
 }

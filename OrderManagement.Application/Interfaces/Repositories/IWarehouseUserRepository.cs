@@ -10,6 +10,8 @@ namespace OrderManagement.Application.Interfaces.Repositories
 
         Task<bool> ExistsAsync(int userId);
 
+        IQueryable<WarehouseUser> GetQueryable();
+
         Task SaveChangesAsync();
     }
 }

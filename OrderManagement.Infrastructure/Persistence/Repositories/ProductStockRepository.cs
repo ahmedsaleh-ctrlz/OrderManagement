@@ -31,15 +31,13 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
         {
             return await _context.ProductStocks.FirstOrDefaultAsync(expression);
         }
-        public async Task<List<ProductStock>> GetByWarehouseIdAsync(int warehouseId)
+        
+        public IQueryable<ProductStock> GetQueryable() 
         {
-            return await _context.ProductStocks
-                .Where(ps => ps.WarehouseId == warehouseId)
-                .Include(ps => ps.Product)
-                .ToListAsync();
+            return _context.ProductStocks.AsNoTracking().AsQueryable();
         }
 
-            public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }

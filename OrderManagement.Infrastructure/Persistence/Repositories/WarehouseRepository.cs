@@ -30,6 +30,7 @@ public class WarehouseRepository : IWarehouseRepository
             .OrderBy(w => w.Id)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .AsNoTracking()
             .ToListAsync();
     }
 

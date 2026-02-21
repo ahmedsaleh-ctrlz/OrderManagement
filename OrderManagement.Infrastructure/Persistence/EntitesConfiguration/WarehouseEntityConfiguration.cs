@@ -19,6 +19,10 @@ namespace OrderManagement.Infrastructure.Persistence.EntitesConfiguration
             builder.Property(w => w.Location)
                 .IsRequired()
                 .HasMaxLength(200);
+
+            builder.HasMany(w => w.ProductStocks)
+                .WithOne(ps => ps.Warehouse)
+                .HasForeignKey(ps => ps.WarehouseId);
         }
     }
 }

@@ -49,6 +49,9 @@ namespace OrderManagementApi.Controllers
                 new { Id = id });
         }
 
+
+ 
+
         /// <summary>
         /// Retrieves paginated orders.
         /// Ownership rules apply based on role.
@@ -147,5 +150,7 @@ namespace OrderManagementApi.Controllers
             await _orderService.CompleteAsync(id);
             return NoContent();
         }
+
+
     }
 }

@@ -12,7 +12,7 @@ namespace OrderManagement.Application.Services.ProductStocks
         Task AddStockAsync(AddStockDTO DTO);
         Task DeductStockAsync(DeductStockDTO DTO);
         Task<int> GetQuantityAsync(ProductQuantityDTO DTO);
-        Task<List<WarehouseStockDTO>> GetStocksByWarehouseAsync(int warehouseId);
+       
 
     }
 }

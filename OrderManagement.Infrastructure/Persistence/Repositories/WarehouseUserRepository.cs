@@ -35,5 +35,14 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
+        public IQueryable<WarehouseUser> GetQueryable() 
+        {
+            return _context.WarehouseUsers.
+                Include(x => x.User)
+                .Include(x => x.Warehouse)
+                .AsNoTracking()
+                .AsQueryable();
+        }
     }
 }

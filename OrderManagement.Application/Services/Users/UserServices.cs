@@ -5,6 +5,7 @@ using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
 
 using OrderManagement.Domain.Entites;
+using OrderManagement.Domain.Enums;
 
 
 namespace OrderManagement.Application.Services.Users
@@ -29,12 +30,7 @@ namespace OrderManagement.Application.Services.Users
             var users = await _repo.GetPagedAsync(param.PageNumber, param.PageSize);
             var totalCount = await _repo.CountAsync();
 
-            var mappedUsers = users.Select(u => new UserDTO
-            {
-                Id = u.Id,
-                Name = u.FullName,
-                Email = u.Email
-            }).ToList();
+            var mappedUsers = users.Select(MapToDto).ToList();
 
             return new PagedResult<UserDTO>
             {
@@ -45,27 +41,29 @@ namespace OrderManagement.Application.Services.Users
             };
         }
 
-        public async Task<int> CreateAsync(CreateUserDto dto)
+        public async Task<PagedResult<UserDTO>> GetCustomersAsync(PaginationParams param)
         {
+            if (param.PageNumber <= 0)
+                param.PageNumber = 1;
 
-            PasswordValidator.Validate(dto.Password);
+            if (param.PageSize <= 0 || param.PageSize > 100)
+                param.PageSize = 10;
 
-            var exists = await _repo.ExistsAsync(u => u.Email == dto.Email);
-            if (exists)
-                throw new BadRequestException("Email already exists");
+            var users = await _repo.GetPagedAsync(param.PageNumber, param.PageSize, u => u.Role == UserRole.Customer);
+            var totalCount = await _repo.CountAsync(u => u.Role == UserRole.Customer);
 
-            var user = new User
+            var mappedUsers = users.Select(MapToDto).ToList();
+
+            return new PagedResult<UserDTO>
             {
-                FullName = dto.FullName,
-                Email = dto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+                Items = mappedUsers,
+                TotalCount = totalCount,
+                PageNumber = param.PageNumber,
+                PageSize = param.PageSize
             };
-
-            await _repo.AddAsync(user);
-            await _repo.SaveChangesAsync();
-
-            return user.Id;
         }
+
+
 
         public async Task<UserDTO> GetByIdAsync(int id)
         {
@@ -119,7 +117,8 @@ namespace OrderManagement.Application.Services.Users
             {
                 Id = user.Id,
                 Name = user.FullName,
-                Email = user.Email
+                Email = user.Email,
+                Role = user.Role.ToString()
             };
         }
     }

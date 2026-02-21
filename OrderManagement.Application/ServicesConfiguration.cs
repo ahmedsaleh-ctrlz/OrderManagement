@@ -7,6 +7,8 @@ using OrderManagement.Application.Services.ProductStocks;
 using OrderManagement.Application.Services.UsersManagement;
 using OrderManagement.Application.Services.Warhouses;
 using OrderManagement.Application.Services.WarhouseUsers;
+using Microsoft.AspNetCore.Http;
+using OrderManagement.Application.Interfaces.Global;
 
 namespace OrderManagement.Application
 {
@@ -22,6 +24,8 @@ namespace OrderManagement.Application
             services.AddScoped<IWarehouseUserService, WarehouseUserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
+           
+            
 
             return services;
         }

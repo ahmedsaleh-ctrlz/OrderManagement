@@ -1,8 +1,11 @@
-﻿using OrderManagement.Application.DTOs.Paging;
+﻿using Microsoft.EntityFrameworkCore;
+using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.ProductDTOs;
 using OrderManagement.Application.Exceptions;
+using OrderManagement.Application.Interfaces.Global;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Domain.Entites;
+
 
 namespace OrderManagement.Application.Services.Products
 {
@@ -11,24 +14,25 @@ namespace OrderManagement.Application.Services.Products
         private readonly IProductRepository _productRepo;
         private readonly IWarehouseRepository _warehouseRepo;
         private readonly IProductStockRepository _stockRepo;
+        private readonly ICurrentUserService _currentUser;
+        
+
 
         public ProductServices(
             IProductRepository productRepo,
             IWarehouseRepository warehouseRepo,
-            IProductStockRepository stockRepo)
+            IProductStockRepository stockRepo,
+            ICurrentUserService currentUser)
         {
             _productRepo = productRepo;
             _warehouseRepo = warehouseRepo;
             _stockRepo = stockRepo;
+            _currentUser = currentUser;
+
         }
 
         public async Task<int> CreateAsync(CreateProductDTO dto)
         {
-
-            var warehouse = await _warehouseRepo.GetByIdAsync(dto.WarehouseId);
-            if (warehouse is null)
-                throw new NotFoundException("Warehouse not found");
-
 
             var exists = await _productRepo.ExistsAsync(p => p.SKU == dto.SKU);
             if (exists)
@@ -47,7 +51,7 @@ namespace OrderManagement.Application.Services.Products
             var stock = new ProductStock
             {
                 Product = product,
-                WarehouseId = dto.WarehouseId,
+                WarehouseId = _currentUser.WarehouseId!.Value,
                 Quantity = dto.InitialQuantity
             };
 
@@ -70,22 +74,35 @@ namespace OrderManagement.Application.Services.Products
 
         public async Task<PagedResult<ProductDTO>> GetPagedAsync(PaginationParams param)
         {
-            if (param.PageNumber <= 0)
-                param.PageNumber = 1;
+            var query = _stockRepo.GetQueryable();
 
-            if (param.PageSize <= 0 || param.PageSize > 100)
-                param.PageSize = 10;
+           
 
-            var products = await _productRepo.GetPagedAsync(param.PageNumber, param.PageSize);
-            var totalCount = await _productRepo.CountAsync();
+            var projectedQuery = query.Select(ps => new ProductDTO
+            {
+                Id = ps.Product.Id,
+                Name = ps.Product.Name,
+                Price = ps.Product.Price,
+                SKU = ps.Product.SKU,
+               
+            });
+
+            var totalCount = await projectedQuery.CountAsync();
+
+            var products = await projectedQuery
+            .OrderBy(p => p.Id)
+            .Skip((param.PageNumber - 1) * param.PageSize)
+             .Take(param.PageSize)
+             .ToListAsync();
 
             return new PagedResult<ProductDTO>
             {
-                Items = products.Select(MapToDto).ToList(),
+                Items = products,
                 TotalCount = totalCount,
-                PageNumber = param.PageNumber,
-                PageSize = param.PageSize
+                PageSize = param.PageSize,
+                PageNumber = param.PageNumber
             };
+
         }
 
         public async Task UpdateAsync(int id, UpdateProductDTO dto)
@@ -125,7 +142,7 @@ namespace OrderManagement.Application.Services.Products
                 Id = product.Id,
                 Name = product.Name,
                 SKU = product.SKU,
-                Price = product.Price
+                Price = product.Price 
             };
         }
     }

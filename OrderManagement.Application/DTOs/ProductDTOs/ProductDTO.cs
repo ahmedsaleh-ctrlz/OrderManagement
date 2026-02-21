@@ -12,5 +12,6 @@ namespace OrderManagement.Application.DTOs.ProductDTOs
         public string Name { get; set; } = default!;
         public string SKU { get; set; } = default!;
         public decimal Price { get; set; }
+       
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrderManagement.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using OrderManagement.Infrastructure.Persistence;
 namespace OrderManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218210211_ModifyRelations")]
+    partial class ModifyRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -257,30 +260,6 @@ namespace OrderManagement.Infrastructure.Migrations
                     b.ToTable("WarehouseUsers");
                 });
 
-            modelBuilder.Entity("OrderStatusHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderStatusHistory");
-                });
-
             modelBuilder.Entity("OrderManagement.Domain.Entites.Order", b =>
                 {
                     b.HasOne("OrderManagement.Domain.Entites.User", "User")
@@ -355,22 +334,9 @@ namespace OrderManagement.Infrastructure.Migrations
                     b.Navigation("Warehouse");
                 });
 
-            modelBuilder.Entity("OrderStatusHistory", b =>
-                {
-                    b.HasOne("OrderManagement.Domain.Entites.Order", "Order")
-                        .WithMany("StatusHistory")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("OrderManagement.Domain.Entites.Order", b =>
                 {
                     b.Navigation("OrderItems");
-
-                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("OrderManagement.Domain.Entites.Product", b =>

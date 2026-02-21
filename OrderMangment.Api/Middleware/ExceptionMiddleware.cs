@@ -29,6 +29,10 @@ public class ExceptionMiddleware
         {
             await HandleException(context, ex, HttpStatusCode.BadRequest);
         }
+        catch (ForbiddenException ex)
+        {
+            await HandleException(context, ex, HttpStatusCode.Forbidden);
+        }
         catch (DbUpdateConcurrencyException ex)
         {
             _logger.LogWarning(ex, "Concurrency conflict occurred.");
