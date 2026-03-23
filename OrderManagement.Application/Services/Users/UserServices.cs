@@ -19,7 +19,7 @@ namespace OrderManagement.Application.Services.Users
             _repo = repo;
         }
 
-        public async Task<PagedResult<UserDTO>> GetPagedAsync(PaginationParams param)
+        public async Task<PagedResult<UserDTO>> GetPagedAsync(PaginationParams param, CancellationToken ct = default)
         {
             if (param.PageNumber <= 0)
                 param.PageNumber = 1;
@@ -27,10 +27,10 @@ namespace OrderManagement.Application.Services.Users
             if (param.PageSize <= 0 || param.PageSize > 100)
                 param.PageSize = 10;
 
-            var users = await _repo.GetPagedAsync(param.PageNumber, param.PageSize);
-            var totalCount = await _repo.CountAsync();
+            var users = await _repo.GetPagedAsync(param.PageNumber, param.PageSize,null,ct);
+            var totalCount = await _repo.CountAsync(null,ct);
 
-            var mappedUsers = users.Select(MapToDto).ToList();
+            var mappedUsers = users.Select(UserDTO.FromModel).ToList();
 
             return new PagedResult<UserDTO>
             {
@@ -41,7 +41,7 @@ namespace OrderManagement.Application.Services.Users
             };
         }
 
-        public async Task<PagedResult<UserDTO>> GetCustomersAsync(PaginationParams param)
+        public async Task<PagedResult<UserDTO>> GetCustomersAsync(PaginationParams param, CancellationToken ct = default)
         {
             if (param.PageNumber <= 0)
                 param.PageNumber = 1;
@@ -49,10 +49,10 @@ namespace OrderManagement.Application.Services.Users
             if (param.PageSize <= 0 || param.PageSize > 100)
                 param.PageSize = 10;
 
-            var users = await _repo.GetPagedAsync(param.PageNumber, param.PageSize, u => u.Role == UserRole.Customer);
-            var totalCount = await _repo.CountAsync(u => u.Role == UserRole.Customer);
+            var users = await _repo.GetPagedAsync(param.PageNumber, param.PageSize, u => u.Role == UserRole.Customer,ct);
+            var totalCount = await _repo.CountAsync(u => u.Role == UserRole.Customer,ct);
 
-            var mappedUsers = users.Select(MapToDto).ToList();
+            var mappedUsers = users.Select(UserDTO.FromModel).ToList();
 
             return new PagedResult<UserDTO>
             {
@@ -65,23 +65,20 @@ namespace OrderManagement.Application.Services.Users
 
 
 
-        public async Task<UserDTO> GetByIdAsync(int id)
+        public async Task<UserDTO> GetByIdAsync(int id, CancellationToken ct = default)
         {
-            var user = await _repo.GetByIdAsync(id);
-            if (user is null)
-                throw new NotFoundException("User not found");
-
-            return MapToDto(user);
+            var user = await _repo.GetByIdAsync(id,ct);
+            return user is null ? throw new NotFoundException("User not found") : UserDTO.FromModel(user);
         }
 
-        public async Task UpdateAsync(int id, UpdateUserDTO dto)
+        public async Task UpdateAsync(int id, UpdateUserDTO dto, CancellationToken ct = default)
         {
-            var user = await _repo.GetByIdAsync(id);
+            var user = await _repo.GetByIdAsync(id,ct);
             if (user is null)
                 throw new NotFoundException("User not found");
 
             var emailExists = await _repo.ExistsAsync(
-                u => u.Email == dto.Email && u.Id != id);
+                u => u.Email == dto.Email && u.Id != id,ct);
 
             if (emailExists)
                 throw new BadRequestException("Email already exists");
@@ -89,37 +86,24 @@ namespace OrderManagement.Application.Services.Users
             user.FullName = dto.FullName;
             user.Email = dto.Email;
 
-            await _repo.SaveChangesAsync();
+            await _repo.SaveChangesAsync(ct);
         }
-        public async Task<UserDTO> GetByEmailAsync(string email)
+        public async Task<UserDTO> GetByEmailAsync(string email, CancellationToken ct = default)
         {
-            var user = await _repo.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _repo.FirstOrDefaultAsync(u => u.Email == email,ct);
             if (user is null)
                 throw new NotFoundException("User not found");
-            return MapToDto(user);
+            return UserDTO.FromModel(user);
         }
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken ct = default)
         {
 
-            var user = await _repo.GetByIdAsync(id);
+            var user = await _repo.GetByIdAsync(id,ct);
             if (user is null)
                 throw new NotFoundException("User not found");
             user.IsDeleted = true;
-            await _repo.SaveChangesAsync();
+            await _repo.SaveChangesAsync(ct);
         }
 
-
-
-
-        private static UserDTO MapToDto(User user)
-        {
-            return new UserDTO
-            {
-                Id = user.Id,
-                Name = user.FullName,
-                Email = user.Email,
-                Role = user.Role.ToString()
-            };
-        }
     }
 }

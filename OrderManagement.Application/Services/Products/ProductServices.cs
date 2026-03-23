@@ -31,10 +31,10 @@ namespace OrderManagement.Application.Services.Products
 
         }
 
-        public async Task<int> CreateAsync(CreateProductDTO dto)
+        public async Task<int> CreateAsync(CreateProductDTO dto, CancellationToken ct = default)
         {
 
-            var exists = await _productRepo.ExistsAsync(p => p.SKU == dto.SKU);
+            var exists = await _productRepo.ExistsAsync(p => p.SKU == dto.SKU,ct);
             if (exists)
                 throw new BadRequestException("SKU already exists");
 
@@ -45,7 +45,7 @@ namespace OrderManagement.Application.Services.Products
                 Price = dto.Price
             };
 
-            await _productRepo.AddAsync(product);
+            await _productRepo.AddAsync(product,ct);
 
 
             var stock = new ProductStock
@@ -55,45 +55,36 @@ namespace OrderManagement.Application.Services.Products
                 Quantity = dto.InitialQuantity
             };
 
-            await _stockRepo.AddAsync(stock);
+            await _stockRepo.AddAsync(stock,ct);
 
 
-            await _productRepo.SaveChangesAsync();
+            await _productRepo.SaveChangesAsync(ct);
 
             return product.Id;
         }
 
-        public async Task<ProductDTO> GetByIdAsync(int id)
+        public async Task<ProductDTO> GetByIdAsync(int id, CancellationToken ct = default)
         {
-            var product = await _productRepo.GetByIdAsync(id);
+            var product = await _productRepo.GetByIdAsync(id,ct);
             if (product is null)
                 throw new NotFoundException("Product not found");
 
-            return MapToDto(product);
+            return ProductDTO.FromModel(product);
         }
 
-        public async Task<PagedResult<ProductDTO>> GetPagedAsync(PaginationParams param)
+        public async Task<PagedResult<ProductDTO>> GetPagedAsync(PaginationParams param, CancellationToken ct = default)
         {
             var query = _stockRepo.GetQueryable();
 
-           
+            var projectedQuery = query.Select(ProductDTO.Selector);
 
-            var projectedQuery = query.Select(ps => new ProductDTO
-            {
-                Id = ps.Product.Id,
-                Name = ps.Product.Name,
-                Price = ps.Product.Price,
-                SKU = ps.Product.SKU,
-               
-            });
-
-            var totalCount = await projectedQuery.CountAsync();
+            var totalCount = await projectedQuery.CountAsync(ct);
 
             var products = await projectedQuery
             .OrderBy(p => p.Id)
             .Skip((param.PageNumber - 1) * param.PageSize)
              .Take(param.PageSize)
-             .ToListAsync();
+             .ToListAsync(ct);
 
             return new PagedResult<ProductDTO>
             {
@@ -105,14 +96,14 @@ namespace OrderManagement.Application.Services.Products
 
         }
 
-        public async Task UpdateAsync(int id, UpdateProductDTO dto)
+        public async Task UpdateAsync(int id, UpdateProductDTO dto, CancellationToken ct = default)
         {
-            var product = await _productRepo.GetByIdAsync(id);
+            var product = await _productRepo.GetByIdAsync(id,ct);
             if (product is null)
                 throw new NotFoundException("Product not found");
 
             var skuExists = await _productRepo.ExistsAsync(
-                p => p.SKU == dto.SKU && p.Id != id);
+                p => p.SKU == dto.SKU && p.Id != id,ct);
 
             if (skuExists)
                 throw new BadRequestException("SKU already exists");
@@ -121,29 +112,20 @@ namespace OrderManagement.Application.Services.Products
             product.SKU = dto.SKU;
             product.Price = dto.Price;
 
-            await _productRepo.SaveChangesAsync();
+            await _productRepo.SaveChangesAsync(ct);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken ct = default)
         {
-            var product = await _productRepo.GetByIdAsync(id);
+            var product = await _productRepo.GetByIdAsync(id,ct);
             if (product is null)
                 throw new NotFoundException("Product not found");
 
             product.IsDeleted = true;
 
-            await _productRepo.SaveChangesAsync();
+            await _productRepo.SaveChangesAsync(ct);
         }
 
-        private static ProductDTO MapToDto(Product product)
-        {
-            return new ProductDTO
-            {
-                Id = product.Id,
-                Name = product.Name,
-                SKU = product.SKU,
-                Price = product.Price 
-            };
-        }
+        
     }
 }

@@ -5,12 +5,12 @@ namespace OrderManagement.Application.Services.Warhouses
 {
     public interface IWarehouseServices
     {
-        Task<int> CreateAsync(CreateWarehouseDTO dto);
-        Task<WarehouseDTO?> GetByIdAsync(int id);
-        Task<PagedResult<WarehouseDTO>> GetPagedAsync(PaginationParams param);
-        Task UpdateAsync(int id, UpdateWarehouseDTO dto);
+        Task<int> CreateAsync(CreateWarehouseDTO dto, CancellationToken ct = default);
+        Task<WarehouseDTO?> GetByIdAsync(int id, CancellationToken ct = default);
+        Task<PagedResult<WarehouseDTO>> GetPagedAsync(PaginationParams param, CancellationToken ct = default);
+        Task UpdateAsync(int id, UpdateWarehouseDTO dto, CancellationToken ct = default);
 
-        Task DeleteAsync(int id);
+        Task DeleteAsync(int id, CancellationToken ct = default);
 
 
     }

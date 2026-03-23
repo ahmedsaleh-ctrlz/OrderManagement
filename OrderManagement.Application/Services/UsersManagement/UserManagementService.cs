@@ -31,13 +31,13 @@ namespace OrderManagement.Application.Services.UsersManagement
         }
 
 
-        public async Task CreateWarehouseAdminAsync(CreateAdminDTO dto)
+        public async Task CreateWarehouseAdminAsync(CreateAdminDTO dto, CancellationToken ct = default)
         {
-            var warehouse = await _warehouseRepo.GetByIdAsync(dto.WarehouseId);
+            var warehouse = await _warehouseRepo.GetByIdAsync(dto.WarehouseId,ct);
             if (warehouse is null)
                 throw new NotFoundException("Warehouse not found");
 
-            var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email);
+            var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email,ct);
             if (exists)
                 throw new BadRequestException("Email already exists");
 
@@ -49,8 +49,8 @@ namespace OrderManagement.Application.Services.UsersManagement
                 Role = UserRole.WarehouseAdmin
             };
 
-            await _userRepo.AddAsync(admin);
-            await _userRepo.SaveChangesAsync();
+            await _userRepo.AddAsync(admin,ct);
+            await _userRepo.SaveChangesAsync(ct);
 
             var link = new WarehouseUser
             {
@@ -58,18 +58,18 @@ namespace OrderManagement.Application.Services.UsersManagement
                 WarehouseId = dto.WarehouseId
             };
 
-            await _warehouseUserRepo.AddAsync(link);
-            await _warehouseUserRepo.SaveChangesAsync();
+            await _warehouseUserRepo.AddAsync(link,ct);
+            await _warehouseUserRepo.SaveChangesAsync(ct);
         }
 
 
         public async Task CreateEmployeeAsync(
-            CreateEmployeeDTO dto)
+            CreateEmployeeDTO dto, CancellationToken ct = default)
         {
             if (_currentUser.WarehouseId is null)
                 throw new BadRequestException("Admin is not linked to a warehouse");
 
-            var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email);
+            var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email,ct);
             if (exists)
                 throw new BadRequestException("Email already exists");
 
@@ -81,8 +81,8 @@ namespace OrderManagement.Application.Services.UsersManagement
                 Role = UserRole.WarehouseEmployee
             };
 
-            await _userRepo.AddAsync(employee);
-            await _userRepo.SaveChangesAsync();
+            await _userRepo.AddAsync(employee,ct);
+            await _userRepo.SaveChangesAsync(ct);
 
             var link = new WarehouseUser
             {
@@ -90,12 +90,12 @@ namespace OrderManagement.Application.Services.UsersManagement
                 WarehouseId = _currentUser.WarehouseId.Value
             };
 
-            await _warehouseUserRepo.AddAsync(link);
-            await _warehouseUserRepo.SaveChangesAsync();
+            await _warehouseUserRepo.AddAsync(link,ct);
+            await _warehouseUserRepo.SaveChangesAsync(ct);
         }
 
 
-        public async Task<PagedResult<EmployeesDTO>> GetPagedEmployees(PaginationParams param)
+        public async Task<PagedResult<EmployeesDTO>> GetPagedEmployees(PaginationParams param, CancellationToken ct = default)
         {
             if (param.PageNumber <= 0)
                 param.PageNumber = 1;
@@ -111,20 +111,14 @@ namespace OrderManagement.Application.Services.UsersManagement
                                 x.User.Role == UserRole.WarehouseEmployee);
             }
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync(ct);
 
-            var users = await query
+            var users = query
                 .OrderBy(x => x.User.FullName)
                 .Skip((param.PageNumber - 1) * param.PageSize)
                 .Take(param.PageSize)
-                .Select(x => new EmployeesDTO
-                {
-                    Id = x.User.Id,
-                    FullName = x.User.FullName,
-                    Email = x.User.Email,
-                    WarehouseName = x.Warehouse.Name
-                })
-                .ToListAsync();
+                .Select(EmployeesDTO.FromModel).ToList();
+
 
             return new PagedResult<EmployeesDTO>
             {

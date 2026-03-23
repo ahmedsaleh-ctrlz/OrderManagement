@@ -11,11 +11,11 @@ namespace OrderManagement.Application.Services.UsersManagement
 {
     public interface IUserManagementService
     {
-        Task CreateWarehouseAdminAsync(CreateAdminDTO dto);
+        Task CreateWarehouseAdminAsync(CreateAdminDTO dto,CancellationToken ct = default);
 
-        Task CreateEmployeeAsync(CreateEmployeeDTO dto);
+        Task CreateEmployeeAsync(CreateEmployeeDTO dto, CancellationToken ct = default);
 
-        Task<PagedResult<EmployeesDTO>> GetPagedEmployees(PaginationParams param);
+        Task<PagedResult<EmployeesDTO>> GetPagedEmployees(PaginationParams param, CancellationToken ct = default);
         
     }
 }

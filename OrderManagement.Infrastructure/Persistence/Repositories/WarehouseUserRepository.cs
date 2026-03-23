@@ -14,26 +14,26 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(WarehouseUser entity)
+        public async Task AddAsync(WarehouseUser entity, CancellationToken ct = default)
         {
-            await _context.WarehouseUsers.AddAsync(entity);
+            await _context.WarehouseUsers.AddAsync(entity,ct);
         }
 
-        public async Task<WarehouseUser?> GetByUserIdAsync(int userId)
+        public async Task<WarehouseUser?> GetByUserIdAsync(int userId, CancellationToken ct = default)
         {
             return await _context.WarehouseUsers
-                .FirstOrDefaultAsync(x => x.UserId == userId);
+                .FirstOrDefaultAsync(x => x.UserId == userId,ct);
         }
 
-        public async Task<bool> ExistsAsync(int userId)
+        public async Task<bool> ExistsAsync(int userId, CancellationToken ct = default)
         {
             return await _context.WarehouseUsers
-                .AnyAsync(x => x.UserId == userId);
+                .AnyAsync(x => x.UserId == userId,ct);
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync(CancellationToken ct = default)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
         }
 
         public IQueryable<WarehouseUser> GetQueryable() 

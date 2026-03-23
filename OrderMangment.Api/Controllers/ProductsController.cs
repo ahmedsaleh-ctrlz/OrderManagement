@@ -36,9 +36,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Create([FromBody] CreateProductDTO DTO)
+        public async Task<IActionResult> Create([FromBody] CreateProductDTO DTO, CancellationToken ct = default)
         {
-            var id = await _productService.CreateAsync(DTO);
+            var id = await _productService.CreateAsync(DTO,ct);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -55,9 +55,9 @@ namespace OrderManagementApi.Controllers
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(int id, CancellationToken ct = default)
         {
-            var product = await _productService.GetByIdAsync(id);
+            var product = await _productService.GetByIdAsync(id,ct);
             return Ok(product);
         }
 
@@ -68,9 +68,9 @@ namespace OrderManagementApi.Controllers
         [Authorize(Roles = "WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param)
+        public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _productService.GetPagedAsync(param);
+            var result = await _productService.GetPagedAsync(param,ct);
             return Ok(result);
         }
 
@@ -85,9 +85,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO DTO)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO DTO, CancellationToken ct = default)
         {
-            await _productService.UpdateAsync(id, DTO);
+            await _productService.UpdateAsync(id, DTO,ct);
             return NoContent();
         }
 
@@ -102,9 +102,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
         {
-            await _productService.DeleteAsync(id);
+            await _productService.DeleteAsync(id,ct);
             return NoContent();
         }
     }

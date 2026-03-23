@@ -40,9 +40,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminDTO dto)
+        public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminDTO dto, CancellationToken ct = default)
         {
-            await _service.CreateWarehouseAdminAsync(dto);
+            await _service.CreateWarehouseAdminAsync(dto,ct);
             return NoContent();
         }
 
@@ -61,17 +61,17 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeDTO dto)
+        public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeDTO dto, CancellationToken ct = default)
         {
-            await _service.CreateEmployeeAsync(dto);
+            await _service.CreateEmployeeAsync(dto,ct);
             return NoContent();
         }
 
         [Authorize(Roles = "WarehouseAdmin,SuperAdmin")]
         [HttpGet("employees")]
-        public async Task<IActionResult> GetPagedEmployees([FromQuery] PaginationParams param)
+        public async Task<IActionResult> GetPagedEmployees([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _service.GetPagedEmployees(param);
+            var result = await _service.GetPagedEmployees(param,ct);
             return Ok(result);
         }
     }

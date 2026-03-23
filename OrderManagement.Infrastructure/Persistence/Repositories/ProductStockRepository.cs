@@ -16,20 +16,20 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
         }
 
         public async Task<ProductStock?> GetAsync(
-            Expression<Func<ProductStock, bool>> expression)
+            Expression<Func<ProductStock, bool>> expression, CancellationToken ct = default)
         {
             return await _context.ProductStocks
-                .FirstOrDefaultAsync(expression);
+                .FirstOrDefaultAsync(expression,ct);
         }
 
-        public async Task AddAsync(ProductStock stock)
+        public async Task AddAsync(ProductStock stock,CancellationToken ct = default)
         {
-            await _context.ProductStocks.AddAsync(stock);
+            await _context.ProductStocks.AddAsync(stock,ct);
         }
         
-        public async Task<ProductStock?> FirstOrDefaultAsync(Expression<Func<ProductStock, bool>> expression) 
+        public async Task<ProductStock?> FirstOrDefaultAsync(Expression<Func<ProductStock, bool>> expression, CancellationToken ct = default) 
         {
-            return await _context.ProductStocks.FirstOrDefaultAsync(expression);
+            return await _context.ProductStocks.FirstOrDefaultAsync(expression,ct);
         }
         
         public IQueryable<ProductStock> GetQueryable() 
@@ -37,9 +37,9 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
             return _context.ProductStocks.AsNoTracking().AsQueryable();
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync(CancellationToken ct = default)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
         }
     }
 }

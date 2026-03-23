@@ -13,9 +13,9 @@ namespace OrderManagement.Application.Services.WarhouseUsers
             _repository = repository;
         }
 
-        public async Task AssignUserToWarehouseAsync(int userId, int warehouseId)
+        public async Task AssignUserToWarehouseAsync(int userId, int warehouseId, CancellationToken ct = default)
         {
-            var exists = await _repository.ExistsAsync(userId);
+            var exists = await _repository.ExistsAsync(userId,ct);
             if (exists)
                 throw new BadRequestException("User already assigned to a warehouse.");
 
@@ -25,13 +25,13 @@ namespace OrderManagement.Application.Services.WarhouseUsers
                 WarehouseId = warehouseId
             };
 
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
+            await _repository.AddAsync(entity,ct);
+            await _repository.SaveChangesAsync(ct);
         }
 
-        public async Task<int?> GetWarehouseIdByUserAsync(int userId)
+        public async Task<int?> GetWarehouseIdByUserAsync(int userId, CancellationToken ct = default)
         {
-            var warehouseUser = await _repository.GetByUserIdAsync(userId);
+            var warehouseUser = await _repository.GetByUserIdAsync(userId,ct);
             return warehouseUser?.WarehouseId;
         }
     }

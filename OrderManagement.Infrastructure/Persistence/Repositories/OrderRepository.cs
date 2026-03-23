@@ -17,27 +17,27 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
 
       
 
-        public async Task AddAsync(Order order)
+        public async Task AddAsync(Order order , CancellationToken ct = default!)
         {
-            await _context.Orders.AddAsync(order);
+            await _context.Orders.AddAsync(order,ct);
         }
 
      
 
-        public async Task<bool> ExistsAsync(Expression<Func<Order, bool>> predicate)
+        public async Task<bool> ExistsAsync(Expression<Func<Order, bool>> predicate, CancellationToken ct = default!)
         {
-            return await _context.Orders.AnyAsync(predicate);
+            return await _context.Orders.AnyAsync(predicate,ct);
         }
 
       
-        public async Task<Order?> GetWithDetailsAsync(int id)
+        public async Task<Order?> GetWithDetailsAsync(int id, CancellationToken ct = default!)
         {
             return await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.Warehouse)
                 .Include(o => o.OrderItems)
                 .Include(o => o.StatusHistory)
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id,ct);
         }
 
 
@@ -55,14 +55,14 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
 
 
 
-        public async Task<int> CountAsync()
+        public async Task<int> CountAsync(CancellationToken ct = default!)
         {
-            return await _context.Orders.CountAsync();
+            return await _context.Orders.CountAsync(ct);
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync(CancellationToken ct = default!)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
         }
     }
 }

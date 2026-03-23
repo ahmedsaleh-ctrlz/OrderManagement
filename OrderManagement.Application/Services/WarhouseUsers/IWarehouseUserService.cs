@@ -8,8 +8,8 @@ namespace OrderManagement.Application.Services.WarhouseUsers
 {
     public interface IWarehouseUserService
     {
-        Task AssignUserToWarehouseAsync(int userId, int warehouseId);
+        Task AssignUserToWarehouseAsync(int userId, int warehouseId, CancellationToken ct = default);
 
-        Task<int?> GetWarehouseIdByUserAsync(int userId);
+        Task<int?> GetWarehouseIdByUserAsync(int userId, CancellationToken ct = default);
     }
 }

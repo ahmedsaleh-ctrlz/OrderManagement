@@ -5,21 +5,21 @@ namespace OrderManagement.Application.Interfaces.Repositories
 {
     public interface IUserRepository
     {
-        Task AddAsync(User user);
+        Task AddAsync(User user, CancellationToken ct = default);
 
-        Task<User?> GetByIdAsync(int id);
+        Task<User?> GetByIdAsync(int id, CancellationToken ct = default);
 
         Task<User?> FirstOrDefaultAsync(
-            Expression<Func<User, bool>> expression);
+            Expression<Func<User, bool>> expression, CancellationToken ct = default);
 
         Task<List<User>> GetPagedAsync(
         int pageNumber,
         int pageSize,
-        Expression<Func<User, bool>>? expression = null);
+        Expression<Func<User, bool>>? expression = null , CancellationToken ct = default);
         Task<bool> ExistsAsync(
-            Expression<Func<User, bool>> expression);
-        Task<int> CountAsync(Expression<Func<User, bool>>? expression = null);
-        Task SaveChangesAsync();
+            Expression<Func<User, bool>> expression, CancellationToken ct = default);
+        Task<int> CountAsync(Expression<Func<User, bool>>? expression = null, CancellationToken ct = default);
+        Task SaveChangesAsync(CancellationToken ct = default);
     }
 
 }

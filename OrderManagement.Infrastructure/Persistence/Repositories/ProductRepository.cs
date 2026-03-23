@@ -19,27 +19,27 @@ namespace OrderManagement.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(Product product)
+        public async Task AddAsync(Product product, CancellationToken ct = default)
         {
-            await _context.Products.AddAsync(product);
+            await _context.Products.AddAsync(product,ct);
         }
 
-        public async Task<Product?> GetByIdAsync(int id)
+        public async Task<Product?> GetByIdAsync(int id, CancellationToken ct = default)
         {
             return await _context.Products
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id,ct);
         }
 
 
-        public async Task<bool> ExistsAsync(Expression<Func<Product, bool>> expression)
+        public async Task<bool> ExistsAsync(Expression<Func<Product, bool>> expression, CancellationToken ct = default)
         {
-            return await _context.Products.AnyAsync(expression);
+            return await _context.Products.AnyAsync(expression,ct);
         }
 
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync(CancellationToken ct = default)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
         }
         
     }

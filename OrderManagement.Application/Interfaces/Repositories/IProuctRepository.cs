@@ -5,17 +5,17 @@ namespace OrderManagement.Application.Interfaces.Repositories
 {
     public interface IProductRepository
     {
-        Task AddAsync(Product product);
+        Task AddAsync(Product product,CancellationToken ct = default);
 
-        Task<Product?> GetByIdAsync(int id);
+        Task<Product?> GetByIdAsync(int id, CancellationToken ct = default);
 
 
 
-        Task<bool> ExistsAsync(Expression<Func<Product, bool>> expression);
+        Task<bool> ExistsAsync(Expression<Func<Product, bool>> expression, CancellationToken ct = default);
 
       
         
 
-        Task SaveChangesAsync();
+        Task SaveChangesAsync(CancellationToken ct = default);
     }
 }

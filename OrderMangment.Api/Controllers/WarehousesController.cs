@@ -36,9 +36,9 @@ namespace OrderManagementApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Create([FromBody] CreateWarehouseDTO DTO)
+        public async Task<IActionResult> Create([FromBody] CreateWarehouseDTO DTO, CancellationToken ct = default)
         {
-            var id = await _warehouseService.CreateAsync(DTO);
+            var id = await _warehouseService.CreateAsync(DTO,ct);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -55,9 +55,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(int id, CancellationToken ct = default)
         {
-            var warehouse = await _warehouseService.GetByIdAsync(id);
+            var warehouse = await _warehouseService.GetByIdAsync(id,ct);
             return Ok(warehouse);
         }
 
@@ -68,9 +68,9 @@ namespace OrderManagementApi.Controllers
         
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param)
+        public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _warehouseService.GetPagedAsync(param);
+            var result = await _warehouseService.GetPagedAsync(param,ct);
             return Ok(result);
         }
 
@@ -84,9 +84,9 @@ namespace OrderManagementApi.Controllers
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateWarehouseDTO DTO)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateWarehouseDTO DTO, CancellationToken ct = default)
         {
-            await _warehouseService.UpdateAsync(id, DTO);
+            await _warehouseService.UpdateAsync(id, DTO,ct);
             return NoContent();
         }
 
@@ -100,9 +100,9 @@ namespace OrderManagementApi.Controllers
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
         {
-            await _warehouseService.DeleteAsync(id);
+            await _warehouseService.DeleteAsync(id,ct);
             return NoContent();
         }
 

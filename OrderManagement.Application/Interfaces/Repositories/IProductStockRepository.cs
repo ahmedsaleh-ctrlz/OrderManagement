@@ -7,13 +7,13 @@ namespace OrderManagement.Application.Interfaces.Repositories
     {
 
         Task<ProductStock?> GetAsync(
-         Expression<Func<ProductStock, bool>> expression);
+         Expression<Func<ProductStock, bool>> expression, CancellationToken ct = default);
 
-        Task AddAsync(ProductStock stock);
-        Task<ProductStock> FirstOrDefaultAsync(Expression<Func<ProductStock, bool>> expression);
+        Task AddAsync(ProductStock stock, CancellationToken ct = default);
+        Task<ProductStock> FirstOrDefaultAsync(Expression<Func<ProductStock, bool>> expression, CancellationToken ct = default);
 
         IQueryable<ProductStock> GetQueryable();
 
-        Task SaveChangesAsync();
+        Task SaveChangesAsync(CancellationToken ct = default);
     }
 }

@@ -41,9 +41,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(int id, CancellationToken ct = default)
         {
-            var user = await _userService.GetByIdAsync(id);
+            var user = await _userService.GetByIdAsync(id,ct);
 
             var authResult = await _authorizationService.AuthorizeAsync(
                 User,
@@ -71,9 +71,9 @@ namespace OrderManagementApi.Controllers
         [HttpGet("All")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param)
+        public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _userService.GetPagedAsync(param);
+            var result = await _userService.GetPagedAsync(param,ct);
             return Ok(result);
         }
 
@@ -93,9 +93,9 @@ namespace OrderManagementApi.Controllers
         [HttpGet("Customers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetCustomersPaged([FromQuery] PaginationParams param)
+        public async Task<IActionResult> GetCustomersPaged([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _userService.GetCustomersAsync(param);
+            var result = await _userService.GetCustomersAsync(param,ct);
             return Ok(result);
         }
 
@@ -117,9 +117,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDTO dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDTO dto, CancellationToken ct = default)
         {
-            var user = await _userService.GetByIdAsync(id);
+            var user = await _userService.GetByIdAsync(id,ct);
 
             var authResult = await _authorizationService.AuthorizeAsync(
                 User,
@@ -129,7 +129,7 @@ namespace OrderManagementApi.Controllers
             if (!authResult.Succeeded)
                 return Forbid();
 
-            await _userService.UpdateAsync(id, dto);
+            await _userService.UpdateAsync(id, dto,ct);
             return NoContent();
         }
 
@@ -149,9 +149,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
         {
-            var user = await _userService.GetByIdAsync(id);
+            var user = await _userService.GetByIdAsync(id,ct);
 
             var authResult = await _authorizationService.AuthorizeAsync(
                 User,
@@ -163,7 +163,7 @@ namespace OrderManagementApi.Controllers
                 return Forbid();
             }
 
-            await _userService.DeleteAsync(id);
+            await _userService.DeleteAsync(id,ct);
             return NoContent();
         }
     }

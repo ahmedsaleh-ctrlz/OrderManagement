@@ -16,7 +16,7 @@ namespace OrderManagement.Application.Services.Warhouses
             _repo = repo;
         }
 
-        public async Task<int> CreateAsync(CreateWarehouseDTO dto)
+        public async Task<int> CreateAsync(CreateWarehouseDTO dto,CancellationToken ct = default)
         {
             var warehouse = new Warehouse
             {
@@ -24,22 +24,22 @@ namespace OrderManagement.Application.Services.Warhouses
                 Location = dto.Location
             };
 
-            await _repo.AddAsync(warehouse);
-            await _repo.SaveChangesAsync();
+            await _repo.AddAsync(warehouse,ct);
+            await _repo.SaveChangesAsync(ct);
 
             return warehouse.Id;
         }
 
-        public async Task<WarehouseDTO?> GetByIdAsync(int id)
+        public async Task<WarehouseDTO?> GetByIdAsync(int id, CancellationToken ct = default)
         {
-            var warehouse = await _repo.GetByIdAsync(id);
+            var warehouse = await _repo.GetByIdAsync(id,ct);
             if (warehouse is null)
                 throw new NotFoundException("Warehouse not found");
 
-            return MapToDto(warehouse);
+            return WarehouseDTO.FromModel(warehouse);
         }
 
-        public async Task<PagedResult<WarehouseDTO>> GetPagedAsync(PaginationParams param)
+        public async Task<PagedResult<WarehouseDTO>> GetPagedAsync(PaginationParams param, CancellationToken ct = default)
         {
             if (param.PageNumber <= 0)
                 param.PageNumber = 1;
@@ -47,49 +47,41 @@ namespace OrderManagement.Application.Services.Warhouses
             if (param.PageSize <= 0 || param.PageSize > 100)
                 param.PageSize = 10;
 
-            var warehouses = await _repo.GetPagedAsync(param.PageNumber, param.PageSize);
-            var totalCount = await _repo.CountAsync();
+            var warehouses = await _repo.GetPagedAsync(param.PageNumber, param.PageSize,ct);
+            var totalCount = await _repo.CountAsync(ct);
 
             return new PagedResult<WarehouseDTO>
             {
-                Items = warehouses.Select(MapToDto).ToList(),
+                Items = warehouses.Select(WarehouseDTO.FromModel).ToList(),
                 TotalCount = totalCount,
                 PageNumber = param.PageNumber,
                 PageSize = param.PageSize
             };
         }
 
-        public async Task UpdateAsync(int id, UpdateWarehouseDTO dto)
+        public async Task UpdateAsync(int id, UpdateWarehouseDTO dto, CancellationToken ct = default)
         {
-            var warehouse = await _repo.GetByIdAsync(id);
+            var warehouse = await _repo.GetByIdAsync(id,ct);
             if (warehouse is null)
                 throw new NotFoundException("Warehouse not found");
 
             warehouse.Name = dto.Name;
             warehouse.Location = dto.Location;
 
-            await _repo.SaveChangesAsync();
+            await _repo.SaveChangesAsync(ct);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, CancellationToken ct = default)
         {
-            var warehouse = await _repo.GetByIdAsync(id);
+            var warehouse = await _repo.GetByIdAsync(id,ct);
             if (warehouse is null)
                 throw new NotFoundException("Warehouse not found");
 
             warehouse.IsDeleted = true;
 
-            await _repo.SaveChangesAsync();
+            await _repo.SaveChangesAsync(ct);
         }
 
-        private static WarehouseDTO MapToDto(Warehouse warehouse)
-        {
-            return new WarehouseDTO
-            {
-                Id = warehouse.Id,
-                Name = warehouse.Name,
-                Location = warehouse.Location
-            };
-        }
+       
     }
 }

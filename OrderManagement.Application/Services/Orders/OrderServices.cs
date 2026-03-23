@@ -34,7 +34,7 @@ namespace OrderManagement.Application.Services.Orders
 
 
 
-        public async Task<PagedResult<OrderDTO>> GetPagedAsync(PaginationParams param)
+        public async Task<PagedResult<OrderDTO>> GetPagedAsync(PaginationParams param, CancellationToken ct = default)
         {
             if (param.PageNumber <= 0)
                 param.PageNumber = 1;
@@ -56,29 +56,25 @@ namespace OrderManagement.Application.Services.Orders
                 query = query.Where(o => o.UserId == _currentUser.UserId);
             }
          
-            var totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync(ct);
 
             var orders = await query
                 .OrderByDescending(o => o.CreatedAt)
                 .Skip((param.PageNumber - 1) * param.PageSize)
                 .Take(param.PageSize)
-                .ToListAsync();
+                .ToListAsync(ct);
 
             return new PagedResult<OrderDTO>
             {
-                Items = orders.Select(MapToDto).ToList(),
+                Items = orders.Select(OrderDTO.FromModel).ToList(),
                 TotalCount = totalCount,
                 PageNumber = param.PageNumber,
                 PageSize = param.PageSize
             };
         }
-
-
-
-
-        public async Task<int> CreateAsync(CreateOrderDTO dto)
+        public async Task<int> CreateAsync(CreateOrderDTO dto, CancellationToken ct)
         {
-            var user = await _userRepo.GetByIdAsync(dto.UserId);
+            var user = await _userRepo.GetByIdAsync(dto.UserId,ct);
             if (user is null)
                 throw new NotFoundException("User not found.");
 
@@ -93,13 +89,13 @@ namespace OrderManagement.Application.Services.Orders
 
             foreach (var item in dto.Items)
             {
-                var product = await _productRepo.GetByIdAsync(item.ProductId);
+                var product = await _productRepo.GetByIdAsync(item.ProductId,ct);
                 if (product is null)
                     throw new NotFoundException($"Product {item.ProductId} not found.");
 
                 var stock = await _stockRepo.FirstOrDefaultAsync(s =>
                     s.ProductId == item.ProductId &&
-                    s.WarehouseId == dto.WarehouseId);
+                    s.WarehouseId == dto.WarehouseId,ct);
 
                 if (stock is null)
                     throw new NotFoundException("Stock not found for selected warehouse.");
@@ -128,26 +124,26 @@ namespace OrderManagement.Application.Services.Orders
                 Status = OrderStatus.Pending
             });
 
-            await _orderRepo.AddAsync(order);
-            await _orderRepo.SaveChangesAsync();
+            await _orderRepo.AddAsync(order,ct);
+            await _orderRepo.SaveChangesAsync(ct);
 
             return order.Id;
         }
 
      
-        public async Task<OrderDTO> GetByIdAsync(int id)
+        public async Task<OrderDTO> GetByIdAsync(int id, CancellationToken ct = default)
         {
-            var order = await _orderRepo.GetWithDetailsAsync(id);
+            var order = await _orderRepo.GetWithDetailsAsync(id,ct);
 
             if (order is null)
                 throw new NotFoundException("Order not found.");
 
-            return MapToDto(order);
+            return OrderDTO.FromModel(order);
         }
 
     
 
-        public async Task ConfirmAsync(int orderId)
+        public async Task ConfirmAsync(int orderId, CancellationToken ct = default)
         {
             var order = await _orderRepo.GetWithDetailsAsync(orderId);
 
@@ -161,7 +157,7 @@ namespace OrderManagement.Application.Services.Orders
             {
                 var stock = await _stockRepo.FirstOrDefaultAsync(s =>
                     s.ProductId == item.ProductId &&
-                    s.WarehouseId == order.WarehouseId);
+                    s.WarehouseId == order.WarehouseId,ct);
 
                 if (stock is null || stock.Quantity < item.Quantity)
                     throw new BadRequestException("Not enough stock.");
@@ -177,14 +173,14 @@ namespace OrderManagement.Application.Services.Orders
                 Status = OrderStatus.Confirmed
             });
 
-            await _orderRepo.SaveChangesAsync();
+            await _orderRepo.SaveChangesAsync(ct);
         }
 
  
 
-        public async Task ShipAsync(int orderId)
+        public async Task ShipAsync(int orderId, CancellationToken ct = default)
         {
-            var order = await _orderRepo.GetWithDetailsAsync(orderId);
+            var order = await _orderRepo.GetWithDetailsAsync(orderId,ct);
 
             if (order is null)
                 throw new NotFoundException("Order not found.");
@@ -199,14 +195,14 @@ namespace OrderManagement.Application.Services.Orders
                 Status = OrderStatus.Shipped
             });
 
-            await _orderRepo.SaveChangesAsync();
+            await _orderRepo.SaveChangesAsync(ct);
         }
 
  
 
-        public async Task CompleteAsync(int orderId)
+        public async Task CompleteAsync(int orderId, CancellationToken ct = default)
         {
-            var order = await _orderRepo.GetWithDetailsAsync(orderId);
+            var order = await _orderRepo.GetWithDetailsAsync(orderId,ct);
 
             if (order is null)
                 throw new NotFoundException("Order not found.");
@@ -221,14 +217,14 @@ namespace OrderManagement.Application.Services.Orders
                 Status = OrderStatus.Completed
             });
 
-            await _orderRepo.SaveChangesAsync();
+            await _orderRepo.SaveChangesAsync(ct);
         }
 
 
 
-        public async Task CancelAsync(int orderId)
+        public async Task CancelAsync(int orderId, CancellationToken ct = default)
         {
-            var order = await _orderRepo.GetWithDetailsAsync(orderId);
+            var order = await _orderRepo.GetWithDetailsAsync(orderId,ct);
 
             if (order is null)
                 throw new NotFoundException("Order not found.");
@@ -243,7 +239,7 @@ namespace OrderManagement.Application.Services.Orders
                 {
                     var stock = await _stockRepo.FirstOrDefaultAsync(s =>
                         s.ProductId == item.ProductId &&
-                        s.WarehouseId == order.WarehouseId);
+                        s.WarehouseId == order.WarehouseId,ct);
 
                     if (stock is not null)
                     {
@@ -260,39 +256,12 @@ namespace OrderManagement.Application.Services.Orders
                 Status = OrderStatus.Cancelled
             });
 
-            await _orderRepo.SaveChangesAsync();
+            await _orderRepo.SaveChangesAsync(ct);
         }
 
      
 
-        private OrderDTO MapToDto(Order order)
-        {
-            return new OrderDTO
-            {
-                Id = order.Id,
-                UserName = order.User?.FullName ?? "",
-                UserEmail = order.User?.Email ?? "",
-                WarehouseName = order.Warehouse?.Name ?? "",
-                TotalAmount = order.TotalAmount,
-                Status = order.Status.ToString(),
-                CreatedAt = order.CreatedAt,
-
-                Items = order.OrderItems.Select(i => new OrderItemDTO
-                {
-                    ProductId = i.ProductId,
-                    ProductName = i.ProductName,
-                    UnitPrice = i.UnitPrice,
-                    Quantity = i.Quantity
-                }).ToList(),
-
-                 History = order.StatusHistory
-                    .OrderBy(h => h.ChangedAt)
-                    .Select(h => new OrderStatusHistoryDto
-                    {
-                        Status = h.Status.ToString(),
-                        ChangedAt = h.ChangedAt
-                    }).ToList()
-            };
-        }
+        
+        
     }
 }

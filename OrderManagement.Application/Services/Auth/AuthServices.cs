@@ -27,9 +27,9 @@ public class AuthService : IAuthService
         _configuration = configuration;
     }
 
-    public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto)
+    public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto, CancellationToken ct = default)
     {
-        var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email);
+        var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email,ct);
         if (exists)
             throw new BadRequestException("Email already exists");
         PasswordValidator.Validate(dto.Password);
@@ -42,15 +42,15 @@ public class AuthService : IAuthService
             Role = UserRole.Customer
         };
 
-        await _userRepo.AddAsync(user);
-        await _userRepo.SaveChangesAsync();
+        await _userRepo.AddAsync(user,ct);
+        await _userRepo.SaveChangesAsync(ct);
 
         return await GenerateTokenAsync(user);
     }
 
-    public async Task<AuthResponseDTO> LoginAsync(LoginDTO dto)
+    public async Task<AuthResponseDTO> LoginAsync(LoginDTO dto, CancellationToken ct = default)
     {
-        var user = await _userRepo.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        var user = await _userRepo.FirstOrDefaultAsync(u => u.Email == dto.Email,ct);
 
         if (user is null ||
             !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
@@ -61,20 +61,20 @@ public class AuthService : IAuthService
         return await GenerateTokenAsync(user);
     }
 
-    private async Task<AuthResponseDTO> GenerateTokenAsync(User user)
+    private async Task<AuthResponseDTO> GenerateTokenAsync(User user, CancellationToken ct = default)
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.Role, user.Role.ToString())
         };
 
         if (user.Role == UserRole.WarehouseAdmin ||
             user.Role == UserRole.WarehouseEmployee)
         {
             var warehouseUser =
-                await _warehouseUserRepo.GetByUserIdAsync(user.Id);
+                await _warehouseUserRepo.GetByUserIdAsync(user.Id,ct);
 
             if (warehouseUser != null)
             {

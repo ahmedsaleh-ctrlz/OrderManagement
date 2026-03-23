@@ -4,7 +4,7 @@ namespace OrderManagement.Application.Services.Auth
 {
     public interface IAuthService
     {
-        Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto);
-        Task<AuthResponseDTO> LoginAsync(LoginDTO dto);
+        Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto, CancellationToken ct = default);
+        Task<AuthResponseDTO> LoginAsync(LoginDTO dto, CancellationToken ct = default);
     }
 }

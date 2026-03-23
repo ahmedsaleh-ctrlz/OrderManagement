@@ -1,4 +1,5 @@
 ﻿using OrderManagement.Application.DTOs.OrderItemDTOs;
+using OrderManagement.Domain.Entites;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,28 @@ namespace OrderManagement.Application.DTOs.OrderDTOs
         public List<OrderItemDTO> Items { get; set; } = new();
 
         public List<OrderStatusHistoryDto> History { get; set; } = new();
+
+        private OrderDTO() { }
+
+        public static OrderDTO FromModel(Order order) 
+        {
+            return new OrderDTO
+            {
+                Id = order.Id,
+                UserName = order.User.FullName,
+                UserEmail = order.User.Email,
+                WarehouseName = order.Warehouse.Name,
+                TotalAmount = order.TotalAmount,
+                Status = order.Status.ToString(),
+                CreatedAt = order.CreatedAt,
+                Items = OrderItemDTO.FromModels(order.OrderItems).ToList(),
+                History = order.StatusHistory.Select(h => new OrderStatusHistoryDto
+                {
+                    Status = h.Status.ToString(),
+                    ChangedAt = h.ChangedAt
+                }).ToList()
+            };
+        }
 
     }
 }

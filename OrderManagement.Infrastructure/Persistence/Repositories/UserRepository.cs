@@ -13,29 +13,29 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task AddAsync(User user)
+    public async Task AddAsync(User user, CancellationToken ct = default)
     {
-        await _context.Users.AddAsync(user);
+        await _context.Users.AddAsync(user,ct);
     }
 
-    public async Task<User?> GetByIdAsync(int id)
+    public async Task<User?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         return await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Id == id,ct);
         
     }
 
     public async Task<User?> FirstOrDefaultAsync(
-        Expression<Func<User, bool>> expression)
+        Expression<Func<User, bool>> expression, CancellationToken ct = default)
     {
         return await _context.Users
-            .FirstOrDefaultAsync(expression);
+            .FirstOrDefaultAsync(expression,ct);
     }
 
     public async Task<List<User>> GetPagedAsync(
         int pageNumber,
         int pageSize,
-        Expression<Func<User, bool>>? expression = null)
+        Expression<Func<User, bool>>? expression = null, CancellationToken ct = default)
     {
         IQueryable<User> query = _context.Users;
 
@@ -47,26 +47,26 @@ public class UserRepository : IUserRepository
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .AsNoTracking()
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
     public async Task<bool> ExistsAsync(
-        Expression<Func<User, bool>> expression)
+        Expression<Func<User, bool>> expression, CancellationToken ct = default)
     {
-        return await _context.Users.AnyAsync(expression);
+        return await _context.Users.AnyAsync(expression,ct);
     }
 
     public async Task<int> CountAsync(
-        Expression<Func<User, bool>>? expression = null)
+        Expression<Func<User, bool>>? expression = null, CancellationToken ct = default)
     {
         if (expression == null)
-            return await _context.Users.CountAsync();
+            return await _context.Users.CountAsync(ct);
 
-        return await _context.Users.CountAsync(expression);
+        return await _context.Users.CountAsync(expression,ct);
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken ct = default)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 }
