@@ -73,6 +73,7 @@ builder.Services.AddScoped<IAuthorizationHandler, UserDataHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, OrderAccessHandler>();
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     // ===============================
@@ -135,13 +136,17 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddProblemDetails();
 
 
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -149,7 +154,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
-
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrderManagement.Application.Exceptions;
 
@@ -65,20 +66,43 @@ public class ExceptionMiddleware
     }
 
     private static async Task HandleException(
-        HttpContext context,
-        Exception ex,
-        HttpStatusCode statusCode)
+    HttpContext context,
+    Exception ex,
+    HttpStatusCode statusCode)
     {
-        context.Response.ContentType = "application/json";
+        context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)statusCode;
 
-        var response = new
+        var problem = new ProblemDetails
         {
-            status = context.Response.StatusCode,
-            message = ex.Message,
-            traceId = context.TraceIdentifier
+            Type = GetTypeUrl(statusCode),
+            Title = GetTitle(statusCode),
+            Status = (int)statusCode,
+            Detail = ex.Message,
+            Instance = context.Request.Path
         };
 
-        await context.Response.WriteAsJsonAsync(response);
+        problem.Extensions["traceId"] = context.TraceIdentifier;
+
+        await context.Response.WriteAsJsonAsync(problem);
     }
+
+
+    private static string GetTitle(HttpStatusCode statusCode) => statusCode switch
+    {
+        HttpStatusCode.NotFound => "Resource Not Found",
+        HttpStatusCode.BadRequest => "Bad Request",
+        HttpStatusCode.Forbidden => "Forbidden",
+        HttpStatusCode.Conflict => "Conflict",
+        _ => "Internal Server Error"
+    };
+
+    private static string GetTypeUrl(HttpStatusCode statusCode) => statusCode switch
+    {
+        HttpStatusCode.NotFound => "https://httpstatuses.com/404",
+        HttpStatusCode.BadRequest => "https://httpstatuses.com/400",
+        HttpStatusCode.Forbidden => "https://httpstatuses.com/403",
+        HttpStatusCode.Conflict => "https://httpstatuses.com/409",
+        _ => "https://httpstatuses.com/500"
+    };
 }

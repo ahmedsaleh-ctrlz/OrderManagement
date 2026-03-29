@@ -33,9 +33,9 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO dto , CancellationToken ct = default)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO dto, CancellationToken ct = default)
         {
-            var result = await _authService.RegisterAsync(dto,ct);
+            var result = await _authService.RegisterAsync(dto, ct);
             return Ok(result);
         }
 
@@ -53,10 +53,12 @@ namespace OrderManagementApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Login([FromBody] LoginDTO dto , CancellationToken ct = default)
+        public async Task<IActionResult> Login([FromBody] LoginDTO dto, CancellationToken ct = default)
         {
-            var result = await _authService.LoginAsync(dto,ct);
+            var result = await _authService.LoginAsync(dto, ct);
             return Ok(result);
         }
+
+      
     }
 }
