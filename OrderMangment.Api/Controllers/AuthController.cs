@@ -59,6 +59,19 @@ namespace OrderManagementApi.Controllers
             return Ok(result);
         }
 
-      
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequest request,CancellationToken ct)
+        {
+            return Ok(await _authService.RefreshTokenAsync(request,ct));
+        }
+
+
+        [HttpPost("Logout")]
+        public async Task<IActionResult> Logout(LogoutRequest request , CancellationToken ct)
+        {
+            await _authService.LogoutAsync(request, ct);
+            return NoContent(); 
+
+        }
     }
 }

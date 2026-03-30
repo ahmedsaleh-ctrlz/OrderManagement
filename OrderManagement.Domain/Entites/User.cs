@@ -15,6 +15,7 @@ namespace OrderManagement.Domain.Entites
         public bool IsDeleted { get; set; } = false;
         public UserRole Role { get; set; } 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public List<RefreshToken> RefreshTokens { get; set; } = new();
 
     }
 

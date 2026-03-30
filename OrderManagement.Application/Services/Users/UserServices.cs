@@ -1,5 +1,4 @@
-﻿using OrderManagement.Application.Common.Validator;
-using OrderManagement.Application.DTOs.Paging;
+﻿using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.UserDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;

@@ -29,7 +29,7 @@ namespace OrderManagement.Infrastructure.Persistence
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<WarehouseUser> WarehouseUsers { get; set; }
 
-
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     }
 }

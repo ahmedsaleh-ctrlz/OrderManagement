@@ -24,6 +24,7 @@ namespace OrderManagement.Infrastructure
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IWarehouseUserRepository, WarehouseUserRepository>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             return services;
         }
     }
