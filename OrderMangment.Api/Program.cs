@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using OrderManagement.Application.Interfaces.Repositories;
-using OrderManagement.Domain.Entites;
 using OrderManagementApi.Authorization.UserOwnerShip;
 using OrderManagementApi.Authorization.OrderAccess;
 using Microsoft.AspNetCore.Authorization;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using OrderManagement.Application.Validators.AuthValidator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -140,7 +141,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddProblemDetails();
-
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 
 
 var app = builder.Build();

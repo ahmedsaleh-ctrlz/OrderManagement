@@ -10,12 +10,9 @@ namespace OrderManagement.Application.DTOs.OrderDTOs
 {
     public class CreateOrderDTO
     {
-        [Required]
+        
         public int UserId { get; set; }
-
         public int WarehouseId { get; set; }   
-        [Required]
-        [MinLength(1, ErrorMessage = "Order must contain at least one item.")]
         public List<CreateOrderItemDTO> Items { get; set; } = new();
     }
 }

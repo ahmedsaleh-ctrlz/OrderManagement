@@ -9,20 +9,9 @@ namespace OrderManagement.Application.DTOs.ProductDTOs
 {
     public class CreateProductDTO
     {
-        [Required]
-        [MaxLength(200)]
         public string Name { get; set; } = default!;
-
-        [Required]
-        [MaxLength(100)]
         public string SKU { get; set; } = default!;
-
-        [Range(0.01, double.MaxValue)]
-        public decimal Price { get; set; }
-
-       
-
-        [Range(0, int.MaxValue)]
+        public decimal Price { get; set; }  
         public int InitialQuantity { get; set; }
     }
 }

@@ -9,12 +9,8 @@ namespace OrderManagement.Application.DTOs.ProductDTOs
 {
     public class UpdateProductDTO
     {
-        [Required]
-        [MaxLength(200)]
         public string Name { get; set; } = default!;
         public string? SKU { get; set; }
-
-        [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
     }
 }

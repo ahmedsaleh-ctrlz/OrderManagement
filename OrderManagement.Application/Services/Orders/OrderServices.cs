@@ -145,7 +145,7 @@ namespace OrderManagement.Application.Services.Orders
 
         public async Task ConfirmAsync(int orderId, CancellationToken ct = default)
         {
-            var order = await _orderRepo.GetWithDetailsAsync(orderId);
+            var order = await _orderRepo.GetWithDetailsAsync(orderId,ct);
 
             if (order is null)
                 throw new NotFoundException("Order not found.");

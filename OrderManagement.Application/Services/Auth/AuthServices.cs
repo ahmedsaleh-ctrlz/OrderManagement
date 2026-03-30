@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using OrderManagement.Application.Common.Validator;
 using OrderManagement.Application.DTOs.AuthDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
@@ -32,7 +31,7 @@ public class AuthService : IAuthService
         var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email,ct);
         if (exists)
             throw new BadRequestException("Email already exists");
-        PasswordValidator.Validate(dto.Password);
+        
 
         var user = new User
         {
