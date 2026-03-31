@@ -6,9 +6,7 @@ using OrderManagement.Application.Services.Products;
 
 namespace OrderManagementApi.Controllers
 {
-    /// <summary>
-    /// Manages product catalog operations.
-    /// </summary>
+
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -21,24 +19,18 @@ namespace OrderManagementApi.Controllers
             _productService = productService;
         }
 
-        /// <summary>
-        /// Creates a new product.
-        /// </summary>
-        /// <remarks>
-        /// Allowed roles: WarehouseAdmin, SuperAdmin.
-        /// SKU must be unique.
-        /// </remarks>
-        /// <response code="201">Product created successfully</response>
-        /// <response code="400">Invalid data or duplicate SKU</response>
-        /// <response code="403">Forbidden</response>
         [Authorize(Roles = "WarehouseAdmin")]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Create([FromBody] CreateProductDTO DTO, CancellationToken ct = default)
+        [EndpointName("CreateProduct")]
+        [EndpointSummary("Create a new product")]
+        [EndpointDescription("Creates a new product. Only warehouse admins are allowed to perform this action.")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> Create([FromBody] CreateProductDTO dto, CancellationToken ct = default)
         {
-            var id = await _productService.CreateAsync(DTO,ct);
+            var id = await _productService.CreateAsync(dto, ct);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -46,65 +38,58 @@ namespace OrderManagementApi.Controllers
                 new { Id = id });
         }
 
-        /// <summary>
-        /// Retrieves a product by ID.
-        /// </summary>
-        /// <response code="200">Product found</response>
-        /// <response code="404">Product not found</response>
-        [Authorize(Roles = "Customer,WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [EndpointName("GetProductById")]
+        [EndpointSummary("Get product by ID")]
+        [EndpointDescription("Retrieves a product by its ID.")]
+        [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id, CancellationToken ct = default)
         {
-            var product = await _productService.GetByIdAsync(id,ct);
+            var product = await _productService.GetByIdAsync(id, ct);
             return Ok(product);
         }
 
-        /// <summary>
-        /// Retrieves paginated products.
-        /// </summary>
-        /// <response code="200">Returns paginated product list</response>
-        [Authorize(Roles = "WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
+        [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [EndpointName("GetPagedProducts")]
+        [EndpointSummary("Get paginated products")]
+        [EndpointDescription("Returns a paginated list of products.")]
+        [ProducesResponseType(typeof(PagedResult<ProductDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _productService.GetPagedAsync(param,ct);
+            var result = await _productService.GetPagedAsync(param, ct);
             return Ok(result);
         }
 
-        /// <summary>
-        /// Updates an existing product.
-        /// </summary>
-        /// <remarks>
-        /// Allowed roles: WarehouseAdmin, SuperAdmin.
-        /// </remarks>
         [Authorize(Roles = "WarehouseAdmin,SuperAdmin")]
         [HttpPut("{id:int}")]
+        [EndpointName("UpdateProduct")]
+        [EndpointSummary("Update a product")]
+        [EndpointDescription("Updates an existing product. Only warehouse admins or super admins can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO DTO, CancellationToken ct = default)
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO dto, CancellationToken ct = default)
         {
-            await _productService.UpdateAsync(id, DTO,ct);
+            await _productService.UpdateAsync(id, dto, ct);
             return NoContent();
         }
 
-        /// <summary>
-        /// Soft deletes a product.
-        /// </summary>
-        /// <remarks>
-        /// Allowed roles: WarehouseAdmin, SuperAdmin.
-        /// </remarks>
         [Authorize(Roles = "WarehouseAdmin,SuperAdmin")]
         [HttpDelete("{id:int}")]
+        [EndpointName("DeleteProduct")]
+        [EndpointSummary("Delete a product")]
+        [EndpointDescription("Deletes a product. Only warehouse admins or super admins can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
         {
-            await _productService.DeleteAsync(id,ct);
+            await _productService.DeleteAsync(id, ct);
             return NoContent();
         }
     }

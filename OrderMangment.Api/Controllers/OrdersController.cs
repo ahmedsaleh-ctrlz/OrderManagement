@@ -6,10 +6,7 @@ using OrderManagement.Application.Services.Orders;
 
 namespace OrderManagementApi.Controllers
 {
-    /// <summary>
-    /// Handles order lifecycle operations including creation, retrieval,
-    /// and status transitions.
-    /// </summary>
+
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -22,26 +19,18 @@ namespace OrderManagementApi.Controllers
             _orderService = orderService;
         }
 
-        /// <summary>
-        /// Creates a new order (Customer only).
-        /// </summary>
-        /// <remarks>
-        /// The order will be created with initial status "Pending".
-        /// Stock validation is performed internally.
-        /// </remarks>
-        /// <response code="201">Order created successfully</response>
-        /// <response code="400">Invalid request or insufficient stock</response>
-        /// <response code="401">Unauthorized</response>
-        /// <response code="403">Forbidden</response>
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [EndpointName("CreateOrder")]
+        [EndpointSummary("Create a new order")]
+        [EndpointDescription("Creates a new order for the authenticated customer.")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Create([FromBody] CreateOrderDTO dto, CancellationToken ct)
         {
-            var id = await _orderService.CreateAsync(dto,ct);
+            var id = await _orderService.CreateAsync(dto, ct);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -49,108 +38,87 @@ namespace OrderManagementApi.Controllers
                 new { Id = id });
         }
 
-
- 
-
-        /// <summary>
-        /// Retrieves paginated orders.
-        /// Ownership rules apply based on role.
-        /// </summary>
-        /// <response code="200">Returns paginated list of orders</response>
-        /// <response code="401">Unauthorized</response>
-        /// <response code="403">Forbidden</response>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [EndpointName("GetPagedOrders")]
+        [EndpointSummary("Get paginated orders")]
+        [EndpointDescription("Returns a paginated list of orders for the authenticated user.")]
+        [ProducesResponseType(typeof(PagedResult<OrderDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetPagedAsync([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var orders = await _orderService.GetPagedAsync(param,ct);
+            var orders = await _orderService.GetPagedAsync(param, ct);
             return Ok(orders);
         }
 
-        /// <summary>
-        /// Retrieves a specific order by ID.
-        /// Ownership validation is enforced.
-        /// </summary>
-        /// <response code="200">Order found</response>
-        /// <response code="401">Unauthorized</response>
-        /// <response code="403">Forbidden - ownership violation</response>
-        /// <response code="404">Order not found</response>
         [HttpGet("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [EndpointName("GetOrderById")]
+        [EndpointSummary("Get order by ID")]
+        [EndpointDescription("Retrieves a specific order by its ID.")]
+        [ProducesResponseType(typeof(OrderDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id, CancellationToken ct = default)
         {
-            var order = await _orderService.GetByIdAsync(id,ct);
+            var order = await _orderService.GetByIdAsync(id, ct);
             return Ok(order);
         }
 
-        /// <summary>
-        /// Confirms an order.
-        /// </summary>
-        /// <remarks>
-        /// Allowed roles: WarehouseAdmin, WarehouseEmployee, SuperAdmin.
-        /// Stock will be deducted upon confirmation.
-        /// </remarks>
         [Authorize(Roles = "WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
         [HttpPut("{id:int}/confirm")]
+        [EndpointName("ConfirmOrder")]
+        [EndpointSummary("Confirm an order")]
+        [EndpointDescription("Confirms an order. Only warehouse staff or admins can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Confirm(int id, CancellationToken ct = default)
         {
-            await _orderService.ConfirmAsync(id,ct);
+            await _orderService.ConfirmAsync(id, ct);
             return NoContent();
         }
 
-        /// <summary>
-        /// Cancels an order.
-        /// </summary>
-        /// <remarks>
-        /// Stock will be restored if already deducted.
-        /// </remarks>
         [Authorize(Roles = "WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
         [HttpPut("{id:int}/cancel")]
+        [EndpointName("CancelOrder")]
+        [EndpointSummary("Cancel an order")]
+        [EndpointDescription("Cancels an order. Only warehouse staff or admins can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Cancel(int id, CancellationToken ct = default)
         {
-            await _orderService.CancelAsync(id,ct);
+            await _orderService.CancelAsync(id, ct);
             return NoContent();
         }
 
-        /// <summary>
-        /// Marks an order as shipped.
-        /// </summary>
         [Authorize(Roles = "WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
         [HttpPut("{id:int}/ship")]
+        [EndpointName("ShipOrder")]
+        [EndpointSummary("Ship an order")]
+        [EndpointDescription("Marks an order as shipped. Only warehouse staff or admins can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Ship(int id, CancellationToken ct = default)
         {
-            await _orderService.ShipAsync(id,ct);
+            await _orderService.ShipAsync(id, ct);
             return NoContent();
         }
 
-        /// <summary>
-        /// Marks an order as completed.
-        /// </summary>
         [Authorize(Roles = "WarehouseAdmin,WarehouseEmployee,SuperAdmin")]
         [HttpPut("{id:int}/complete")]
+        [EndpointName("CompleteOrder")]
+        [EndpointSummary("Complete an order")]
+        [EndpointDescription("Marks an order as completed. Only warehouse staff or admins can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Complete(int id, CancellationToken ct = default)
         {
-            await _orderService.CompleteAsync(id,ct);
+            await _orderService.CompleteAsync(id, ct);
             return NoContent();
         }
-
-
     }
 }

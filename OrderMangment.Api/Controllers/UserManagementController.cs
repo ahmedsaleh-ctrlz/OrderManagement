@@ -3,17 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.UserMangemanetDTOs;
 using OrderManagement.Application.Services.UsersManagement;
-using System.Security.Claims;
+
 
 namespace OrderManagementApi.Controllers
 {
-    /// <summary>
-    /// Handles administrative user management operations.
-    /// </summary>
-    /// <remarks>
-    /// - SuperAdmin can create WarehouseAdmins.
-    /// - WarehouseAdmin can create Employees within their warehouse.
-    /// </remarks>
+
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -26,52 +20,47 @@ namespace OrderManagementApi.Controllers
             _service = service;
         }
 
-        /// <summary>
-        /// Creates a new Warehouse Administrator.
-        /// </summary>
-        /// <remarks>
-        /// Allowed role: SuperAdmin only.
-        /// </remarks>
-        /// <response code="204">Warehouse admin created successfully</response>
-        /// <response code="400">Invalid input data</response>
-        /// <response code="403">Forbidden</response>
         [Authorize(Roles = "SuperAdmin")]
         [HttpPost("create-admin")]
+        [EndpointName("CreateWarehouseAdmin")]
+        [EndpointSummary("Create warehouse admin")]
+        [EndpointDescription("Creates a new warehouse admin. Only SuperAdmin can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminDTO dto, CancellationToken ct = default)
         {
-            await _service.CreateWarehouseAdminAsync(dto,ct);
+            await _service.CreateWarehouseAdminAsync(dto, ct);
             return NoContent();
         }
 
-        /// <summary>
-        /// Creates a new Warehouse Employee within the current admin's warehouse.
-        /// </summary>
-        /// <remarks>
-        /// Allowed role: WarehouseAdmin only.
-        /// Employee will be automatically linked to the same warehouse.
-        /// </remarks>
-        /// <response code="204">Employee created successfully</response>
-        /// <response code="400">Invalid input data</response>
-        /// <response code="403">Forbidden</response>
         [Authorize(Roles = "WarehouseAdmin")]
         [HttpPost("create-employee")]
+        [EndpointName("CreateEmployee")]
+        [EndpointSummary("Create warehouse employee")]
+        [EndpointDescription("Creates a new warehouse employee. Only WarehouseAdmin can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeDTO dto, CancellationToken ct = default)
         {
-            await _service.CreateEmployeeAsync(dto,ct);
+            await _service.CreateEmployeeAsync(dto, ct);
             return NoContent();
         }
 
         [Authorize(Roles = "WarehouseAdmin,SuperAdmin")]
         [HttpGet("employees")]
+        [EndpointName("GetPagedEmployees")]
+        [EndpointSummary("Get paginated employees")]
+        [EndpointDescription("Returns a paginated list of employees. Accessible by WarehouseAdmin and SuperAdmin.")]
+        [ProducesResponseType(typeof(PagedResult<EmployeesDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetPagedEmployees([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _service.GetPagedEmployees(param,ct);
+            var result = await _service.GetPagedEmployees(param, ct);
             return Ok(result);
         }
     }

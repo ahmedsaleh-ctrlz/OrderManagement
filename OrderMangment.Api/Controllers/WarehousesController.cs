@@ -7,9 +7,7 @@ using OrderManagement.Application.Services.Warhouses;
 
 namespace OrderManagementApi.Controllers
 {
-    /// <summary>
-    /// Manages warehouse operations and warehouse stock visibility.
-    /// </summary>
+
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
@@ -26,19 +24,17 @@ namespace OrderManagementApi.Controllers
             _productStockService = productStockServices;
         }
 
-        /// <summary>
-        /// Creates a new warehouse.
-        /// </summary>
-        /// <remarks>
-        /// Allowed role: SuperAdmin only.
-        /// </remarks>
         [Authorize(Roles = "SuperAdmin")]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Create([FromBody] CreateWarehouseDTO DTO, CancellationToken ct = default)
+        [EndpointName("CreateWarehouse")]
+        [EndpointSummary("Create warehouse")]
+        [EndpointDescription("Creates a new warehouse. Only SuperAdmin can perform this action.")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> Create([FromBody] CreateWarehouseDTO dto, CancellationToken ct = default)
         {
-            var id = await _warehouseService.CreateAsync(DTO,ct);
+            var id = await _warehouseService.CreateAsync(dto, ct);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -46,65 +42,64 @@ namespace OrderManagementApi.Controllers
                 new { Id = id });
         }
 
-        /// <summary>
-        /// Retrieves warehouse by ID.
-        /// </summary>
-   
-        
         [HttpGet("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [EndpointName("GetWarehouseById")]
+        [EndpointSummary("Get warehouse by ID")]
+        [EndpointDescription("Retrieves a warehouse by its ID.")]
+        [ProducesResponseType(typeof(WarehouseDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id, CancellationToken ct = default)
         {
-            var warehouse = await _warehouseService.GetByIdAsync(id,ct);
+            var warehouse = await _warehouseService.GetByIdAsync(id, ct);
+
+            if (warehouse == null)
+                return NotFound();
+
             return Ok(warehouse);
         }
 
-        /// <summary>
-        /// Retrieves paginated warehouses.
-        /// </summary>
-    
-        
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [EndpointName("GetPagedWarehouses")]
+        [EndpointSummary("Get paginated warehouses")]
+        [EndpointDescription("Returns a paginated list of warehouses.")]
+        [ProducesResponseType(typeof(PagedResult<WarehouseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetPaged([FromQuery] PaginationParams param, CancellationToken ct = default)
         {
-            var result = await _warehouseService.GetPagedAsync(param,ct);
+            var result = await _warehouseService.GetPagedAsync(param, ct);
             return Ok(result);
         }
 
-        /// <summary>
-        /// Updates warehouse information.
-        /// </summary>
-        /// <remarks>
-        /// Allowed role: SuperAdmin.
-        /// </remarks>
         [Authorize(Roles = "SuperAdmin")]
         [HttpPut("{id:int}")]
+        [EndpointName("UpdateWarehouse")]
+        [EndpointSummary("Update warehouse")]
+        [EndpointDescription("Updates a warehouse. Only SuperAdmin can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateWarehouseDTO DTO, CancellationToken ct = default)
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateWarehouseDTO dto, CancellationToken ct = default)
         {
-            await _warehouseService.UpdateAsync(id, DTO,ct);
+            await _warehouseService.UpdateAsync(id, dto, ct);
             return NoContent();
         }
 
-        /// <summary>
-        /// Soft deletes a warehouse.
-        /// </summary>
-        /// <remarks>
-        /// Allowed role: SuperAdmin.
-        /// </remarks>
         [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{id:int}")]
+        [EndpointName("DeleteWarehouse")]
+        [EndpointSummary("Delete warehouse")]
+        [EndpointDescription("Deletes a warehouse. Only SuperAdmin can perform this action.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
         {
-            await _warehouseService.DeleteAsync(id,ct);
+            await _warehouseService.DeleteAsync(id, ct);
             return NoContent();
         }
-
     }
 }
