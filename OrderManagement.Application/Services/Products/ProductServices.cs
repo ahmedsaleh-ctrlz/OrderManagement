@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using OrderManagement.Application.DTOs.Paging;
 using OrderManagement.Application.DTOs.ProductDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Global;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Domain.Entites;
+using System.Text.Json;
 
 
 namespace OrderManagement.Application.Services.Products
@@ -15,6 +17,7 @@ namespace OrderManagement.Application.Services.Products
         private readonly IWarehouseRepository _warehouseRepo;
         private readonly IProductStockRepository _stockRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly IDistributedCache _cache;
         
 
 
@@ -22,12 +25,14 @@ namespace OrderManagement.Application.Services.Products
             IProductRepository productRepo,
             IWarehouseRepository warehouseRepo,
             IProductStockRepository stockRepo,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IDistributedCache cache)
         {
             _productRepo = productRepo;
             _warehouseRepo = warehouseRepo;
             _stockRepo = stockRepo;
             _currentUser = currentUser;
+            _cache = cache;
 
         }
 
@@ -72,21 +77,47 @@ namespace OrderManagement.Application.Services.Products
             return ProductDTO.FromModel(product);
         }
 
-        public async Task<PagedResult<ProductDTO>> GetPagedAsync(PaginationParams param, CancellationToken ct = default)
+        public async Task<PagedResult<ProductDTO>> GetPagedAsync(
+        PaginationParams param,
+        CancellationToken ct = default)
         {
+            // To Make Cache Invalidate When Data Changes, We Use A Versioning System For Cache Keys
+            var version = await _cache.GetStringAsync("products_version", ct) ?? "1";
+
+           
+            var cacheKey = $"products_v{version}_p{param.PageNumber}_s{param.PageSize}";
+
+            
+            var shouldCache = param.PageNumber <= 5;
+
+            if (shouldCache)
+            {
+                var cacheData = await _cache.GetStringAsync(cacheKey, ct);
+
+                if (cacheData is not null)
+                {
+                    return JsonSerializer.Deserialize<PagedResult<ProductDTO>>(cacheData)!;
+                }
+            }
+
+           
             var query = _stockRepo.GetQueryable();
 
+            
+
             var projectedQuery = query.Select(ProductDTO.Selector);
+
+           
+           
 
             var totalCount = await projectedQuery.CountAsync(ct);
 
             var products = await projectedQuery
-            .OrderBy(p => p.Id)
-            .Skip((param.PageNumber - 1) * param.PageSize)
-             .Take(param.PageSize)
-             .ToListAsync(ct);
+                .Skip((param.PageNumber - 1) * param.PageSize)
+                .Take(param.PageSize)
+                .ToListAsync(ct);
 
-            return new PagedResult<ProductDTO>
+            var data = new PagedResult<ProductDTO>
             {
                 Items = products,
                 TotalCount = totalCount,
@@ -94,6 +125,21 @@ namespace OrderManagement.Application.Services.Products
                 PageNumber = param.PageNumber
             };
 
+            if (shouldCache)
+            {
+                var serializedData = JsonSerializer.Serialize(data);
+
+                await _cache.SetStringAsync(
+                    cacheKey,
+                    serializedData,
+                    new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) 
+                    },
+                    ct);
+            }
+
+            return data;
         }
 
         public async Task UpdateAsync(int id, UpdateProductDTO dto, CancellationToken ct = default)
@@ -113,6 +159,11 @@ namespace OrderManagement.Application.Services.Products
             product.Price = dto.Price;
 
             await _productRepo.SaveChangesAsync(ct);
+
+            await _cache.SetStringAsync(
+            "products_version",
+            Guid.NewGuid().ToString(),
+            ct);
         }
 
         public async Task DeleteAsync(int id, CancellationToken ct = default)
@@ -124,6 +175,10 @@ namespace OrderManagement.Application.Services.Products
             product.IsDeleted = true;
 
             await _productRepo.SaveChangesAsync(ct);
+            await _cache.SetStringAsync(
+            "products_version",
+            Guid.NewGuid().ToString(),
+            ct);
         }
 
         

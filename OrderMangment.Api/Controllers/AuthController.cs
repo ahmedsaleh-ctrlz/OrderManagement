@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OrderManagement.Application.DTOs.AuthDTOs;
 using OrderManagement.Application.Services.Auth;
 
@@ -38,6 +39,7 @@ namespace OrderManagementApi.Controllers
         [EndpointName("UserLogin")]
         [EndpointSummary("User login")]
         [EndpointDescription("Authenticates a user and returns an authentication token.")]
+        [EnableRateLimiting(policyName:"IpPolicy")]
         public async Task<IActionResult> Login([FromBody] LoginDTO dto, CancellationToken ct = default)
         {
             var result = await _authService.LoginAsync(dto, ct);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OrderManagement.Application.DTOs.ProductDTOs
@@ -15,6 +16,7 @@ namespace OrderManagement.Application.DTOs.ProductDTOs
         public string SKU { get; set; } = default!;
         public decimal Price { get; set; }
 
+        [JsonConstructor]
         private ProductDTO() { }
 
         public static ProductDTO FromModel(Product product)

@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using System.Threading.RateLimiting;
 
 namespace OrderManagementApi.Common.Extensions
 {
@@ -53,10 +55,43 @@ namespace OrderManagementApi.Common.Extensions
                 });
             });
 
+            services.AddRateLimiterService();
+
             return services;
         }
 
 
+
+        private static IServiceCollection AddRateLimiterService(this IServiceCollection services) 
+        {
+            services.AddRateLimiter(options =>
+            {
+                    options.AddFixedWindowLimiter("DefaultPolicy", options =>
+                    {
+                        options.Window = TimeSpan.FromMinutes(1);
+                        options.PermitLimit = 100;
+                        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                        options.QueueLimit = 10;
+                    });
+
+                    options.AddPolicy("IpPolicy", context =>
+                    {
+                        return RateLimitPartition.GetSlidingWindowLimiter(
+                            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                            factory: _ => new SlidingWindowRateLimiterOptions
+                            {
+                                Window = TimeSpan.FromMinutes(1),
+                                PermitLimit = 10,
+                                SegmentsPerWindow = 6,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                AutoReplenishment = true,
+                            });
+                            
+                    });
+            });
+
+            return services;
+        }
 
       
     }

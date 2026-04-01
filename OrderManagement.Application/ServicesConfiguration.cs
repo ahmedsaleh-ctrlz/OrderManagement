@@ -11,15 +11,17 @@ using OrderManagement.Application.Services.Warhouses;
 using OrderManagement.Application.Services.WarhouseUsers;
 using OrderManagement.Application.Validators.AuthValidator;
 using OrderManagement.Application.Interfaces.Global;
+using Microsoft.Extensions.Configuration;
 
 namespace OrderManagement.Application
 {
     public static class ServicesConfiguration
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplication(this IServiceCollection services , IConfiguration configuration)
         {
             services
                 .AddDIServices()
+                .AddCacheService(configuration)
                 .AddValidationServices()
                 .AddHttpContextAccessor();
 
@@ -44,6 +46,17 @@ namespace OrderManagement.Application
         {
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<LoginValidator>();
+
+            return services;
+        }
+
+        private static IServiceCollection AddCacheService(this IServiceCollection services ,IConfiguration configuration) 
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration.GetConnectionString("Redis"); 
+                options.InstanceName = "OrderManagementApp_"; 
+            });
 
             return services;
         }
