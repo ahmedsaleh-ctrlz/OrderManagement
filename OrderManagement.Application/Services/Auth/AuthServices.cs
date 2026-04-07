@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OrderManagement.Application.DTOs.AuthDTOs;
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Application.Services.Auth;
+using OrderManagement.Application.Services.Users;
+using OrderManagement.Application.Services.WarhouseUsers;
 using OrderManagement.Domain.Entites;
 using OrderManagement.Domain.Enums;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,126 +16,149 @@ using System.Text;
 
 public class AuthService : IAuthService
 {
-    private readonly IUserRepository _userRepo;
-    private readonly IWarehouseUserRepository _warehouseUserRepo;
+    private readonly IUserServices _userSevices;
+    private readonly IWarehouseUserService _warehouseUserServices;
     private readonly IConfiguration _configuration;
     private readonly IRefreshTokenRepository _refreshTokenRepo;
+    private readonly ILogger<AuthService> _logger;
 
     public AuthService(
-        IUserRepository userRepo,
-        IWarehouseUserRepository warehouseUserRepo,
+        IUserServices userServices,
+        IWarehouseUserService warehouseUserService,
         IConfiguration configuration,
-        IRefreshTokenRepository refreshTokenRepo)
+        IRefreshTokenRepository refreshTokenRepo,
+        ILogger<AuthService> logger)
     {
-        _userRepo = userRepo;
-        _warehouseUserRepo = warehouseUserRepo;
+        _userSevices = userServices;
+        _warehouseUserServices = warehouseUserService;
         _configuration = configuration;
-        _refreshTokenRepo = refreshTokenRepo;   
+        _refreshTokenRepo = refreshTokenRepo;
+        _logger = logger;
+
     }
 
     public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto, CancellationToken ct = default)
     {
-        var exists = await _userRepo.ExistsAsync(u => u.Email == dto.Email,ct);
-        if (exists)
-            throw new BadRequestException("Email already exists");
-        
+        _logger.LogTrace("Starting registration for {Email}", dto.Email);
 
-        var user = new User
+        try
         {
-            FullName = dto.FullName,
-            Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Role = UserRole.Customer
-        };
+            var newUser = await _userSevices.AddUserAsync(dto, ct);
 
-        await _userRepo.AddAsync(user,ct);
-        await _userRepo.SaveChangesAsync(ct);
+            _logger.LogInformation("User registered successfully. UserId: {UserId}, Email: {Email}", newUser.Id, newUser.Email);
 
-        return await GenerateTokenAsync(user);
+            return await GenerateTokenAsync(newUser, ct);
+        }
+        catch (BadRequestException ex)
+        {
+            _logger.LogWarning(
+                "Registration failed: {Message}, Email: {Email}",
+                ex.Message,
+                dto.Email);
+
+            throw;
+        }
     }
 
     public async Task<AuthResponseDTO> LoginAsync(LoginDTO dto, CancellationToken ct = default)
     {
-        var user = await _userRepo.FirstOrDefaultAsync(u => u.Email == dto.Email,ct);
+        _logger.LogTrace("Login attempt for {Email}", dto.Email);
 
-        if (user is null ||
-            !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        var user = await _userSevices.VerfiyLoginAsync(dto, ct);
+
+        if (user is null)
         {
-            throw new BadRequestException("Invalid credentials");
+            _logger.LogWarning("Failed login attempt for {Email}", dto.Email);
+            throw new BadRequestException("Invalid Email Or Password");
         }
 
-        return await GenerateTokenAsync(user,ct);
+        _logger.LogInformation("User logged in successfully. UserId: {UserId}", user.Id);
+
+        return await GenerateTokenAsync(user, ct);
     }
 
     public async Task<AuthResponseDTO> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken ct)
     {
+        _logger.LogTrace("Refresh token attempt");
+
         var hashedToken = HashToken(request.RefreshToken);
         var tokenRecord = await _refreshTokenRepo.GetByTokenHashAsync(hashedToken, ct);
 
-        if (tokenRecord is null || tokenRecord.ExpiryDate < DateTime.UtcNow)
+        if (tokenRecord is null)
         {
-            throw new BadRequestException("Invalid or expired refresh token");
-        }
-
-        if (tokenRecord!.RevokedAt != null)
-        {
-            
+            _logger.LogWarning("Refresh token not found");
             throw new BadRequestException("Invalid refresh token");
         }
 
-       
-
-        var user = await _userRepo.GetByIdAsync(tokenRecord.UserId, ct);
-        if (user == null)
+        if (tokenRecord.ExpiryDate < DateTime.UtcNow)
         {
-            throw new BadRequestException("User not found");
+            _logger.LogWarning("Expired refresh token for UserId: {UserId}", tokenRecord.UserId);
+            throw new BadRequestException("Invalid refresh token");
         }
 
-        // Invalidate the old refresh token
-        
+        if (tokenRecord.RevokedAt != null)
+        {
+            _logger.LogWarning("Revoked refresh token reuse attempt for UserId: {UserId}", tokenRecord.UserId);
+            throw new BadRequestException("Invalid refresh token");
+        }
+
+        var user = await _userSevices.GetUserAsync(tokenRecord.UserId, ct);
+
         tokenRecord.RevokedAt = DateTime.UtcNow;
-        
-        var NewTokens = await GenerateTokenAsync(user, ct);
-        tokenRecord.ReplacedByToken = HashToken(NewTokens.RefreshToken);
+
+        var newTokens = await GenerateTokenAsync(user, ct);
+
+        tokenRecord.ReplacedByToken = HashToken(newTokens.RefreshToken);
         await _refreshTokenRepo.SaveChangesAsync(ct);
 
-        return NewTokens;
+        _logger.LogInformation("Refresh token succeeded for UserId: {UserId}", user.Id);
+
+        return newTokens;
     }
 
     public async Task LogoutAsync(LogoutRequest request, CancellationToken ct)
     {
-       
+        _logger.LogTrace("Logout attempt");
+
         var hashedToken = HashToken(request.RefreshToken);
 
-       
         var tokenRecord = await _refreshTokenRepo
             .GetByTokenHashAsync(hashedToken, ct);
 
-     
         if (tokenRecord is null)
+        {
+            _logger.LogWarning("Logout attempt with invalid token");
             return;
- 
-        if (tokenRecord.RevokedAt != null)
-            return;
+        }
 
-        tokenRecord.RevokedAt = DateTime.UtcNow;    
+        if (tokenRecord.RevokedAt != null)
+        {
+            _logger.LogWarning("Logout attempt with already revoked token. UserId: {UserId}", tokenRecord.UserId);
+            return;
+        }
+
+        tokenRecord.RevokedAt = DateTime.UtcNow;
         await _refreshTokenRepo.SaveChangesAsync(ct);
+
+        _logger.LogInformation("User logged out successfully. UserId: {UserId}", tokenRecord.UserId);
     }
 
     private async Task<AuthResponseDTO> GenerateTokenAsync(User user, CancellationToken ct = default)
     {
+        _logger.LogDebug("Generating token for UserId: {UserId}", user.Id);
+
         var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.Role, user.Role.ToString())
-        };
+    {
+        new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new(ClaimTypes.Email, user.Email),
+        new(ClaimTypes.Role, user.Role.ToString())
+    };
 
         if (user.Role == UserRole.WarehouseAdmin ||
             user.Role == UserRole.WarehouseEmployee)
         {
             var warehouseUser =
-                await _warehouseUserRepo.GetByUserIdAsync(user.Id,ct);
+                await _warehouseUserServices.GetByUserIdAsync(user.Id, ct);
 
             if (warehouseUser != null)
             {
@@ -144,7 +170,10 @@ public class AuthService : IAuthService
 
         var secret = _configuration["JWT_SECRET_KEY"];
         if (string.IsNullOrEmpty(secret))
+        {
+            _logger.LogCritical("JWT_SECRET_KEY is missing in configuration");
             throw new Exception("JWT_SECRET is not configured.");
+        }
 
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(secret));
@@ -176,11 +205,12 @@ public class AuthService : IAuthService
         await _refreshTokenRepo.AddAsync(refreshTokenRecord, ct);
         await _refreshTokenRepo.SaveChangesAsync(ct);
 
+        _logger.LogInformation("Token generated successfully for UserId: {UserId}", user.Id);
+
         return new AuthResponseDTO
         {
             Token = new JwtSecurityTokenHandler().WriteToken(token),
             RefreshToken = refreshToken,
-
         };
     }
     private string GenerateRefreshToken()

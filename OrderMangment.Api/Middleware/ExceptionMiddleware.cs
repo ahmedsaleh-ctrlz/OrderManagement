@@ -18,57 +18,80 @@ public class ExceptionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var traceId = context.TraceIdentifier;
+        var path = context.Request.Path;
+        var method = context.Request.Method;
+
         try
         {
             await _next(context);
         }
         catch (NotFoundException ex)
         {
-            await HandleException(context, ex, HttpStatusCode.NotFound);
+            _logger.LogWarning(
+                "NotFound: {Message}, TraceId: {TraceId}, Method: {Method}, Path: {Path}",
+                ex.Message, traceId, method, path);
+
+            await HandleException(context,
+                "Resource not found.",
+                HttpStatusCode.NotFound);
         }
         catch (BadRequestException ex)
         {
-            await HandleException(context, ex, HttpStatusCode.BadRequest);
+            _logger.LogWarning(
+                "BadRequest: {Message}, TraceId: {TraceId}, Method: {Method}, Path: {Path}",
+                ex.Message, traceId, method, path);
+
+            await HandleException(context,
+                ex.Message, // هنا مسموح يظهر
+                HttpStatusCode.BadRequest);
         }
         catch (ForbiddenException ex)
         {
-            await HandleException(context, ex, HttpStatusCode.Forbidden);
+            _logger.LogWarning(
+                "Forbidden: {Message}, TraceId: {TraceId}, Method: {Method}, Path: {Path}",
+                ex.Message, traceId, method, path);
+
+            await HandleException(context,
+                "You are not allowed to perform this action.",
+                HttpStatusCode.Forbidden);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            _logger.LogWarning(ex, "Concurrency conflict occurred.");
+            _logger.LogWarning(ex,
+                "Concurrency conflict. TraceId: {TraceId}, Method: {Method}, Path: {Path}",
+                traceId, method, path);
 
-            await HandleException(
-                context,
-                new Exception("The resource was modified by another request. Please retry."),
+            await HandleException(context,
+                "The resource was modified by another request. Please retry.",
                 HttpStatusCode.Conflict);
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogWarning(ex, "Database update exception occurred.");
+            _logger.LogWarning(ex,
+                "Database update error. TraceId: {TraceId}, Method: {Method}, Path: {Path}",
+                traceId, method, path);
 
-            await HandleException(
-                context,
-                new Exception("Database constraint violation."),
+            await HandleException(context,
+                "Database constraint violation.",
                 HttpStatusCode.Conflict);
         }
-
-
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled Exception");
+            _logger.LogError(ex,
+                "Unhandled exception. TraceId: {TraceId}, Method: {Method}, Path: {Path}",
+                traceId, method, path);
 
-            await HandleException(
-                context,
-                new Exception("An unexpected error occurred."),
+            await HandleException(context,
+                "An unexpected error occurred.",
                 HttpStatusCode.InternalServerError);
         }
     }
 
     private static async Task HandleException(
-    HttpContext context,
-    Exception ex,
-    HttpStatusCode statusCode)
+        HttpContext context,
+        string message,
+        HttpStatusCode statusCode)
     {
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)statusCode;
@@ -78,7 +101,7 @@ public class ExceptionMiddleware
             Type = GetTypeUrl(statusCode),
             Title = GetTitle(statusCode),
             Status = (int)statusCode,
-            Detail = ex.Message,
+            Detail = message,
             Instance = context.Request.Path
         };
 
@@ -86,7 +109,6 @@ public class ExceptionMiddleware
 
         await context.Response.WriteAsJsonAsync(problem);
     }
-
 
     private static string GetTitle(HttpStatusCode statusCode) => statusCode switch
     {

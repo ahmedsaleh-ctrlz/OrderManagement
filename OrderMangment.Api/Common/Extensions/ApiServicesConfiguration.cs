@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Threading.RateLimiting;
 
 namespace OrderManagementApi.Common.Extensions
@@ -93,6 +94,7 @@ namespace OrderManagementApi.Common.Extensions
             return services;
         }
 
+       
       
     }
 }

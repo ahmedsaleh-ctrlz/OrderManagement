@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderManagement.Domain.Entites;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,7 @@ namespace OrderManagement.Application.Services.WarhouseUsers
         Task AssignUserToWarehouseAsync(int userId, int warehouseId, CancellationToken ct = default);
 
         Task<int?> GetWarehouseIdByUserAsync(int userId, CancellationToken ct = default);
+
+        Task<WarehouseUser> GetByUserIdAsync(int userId, CancellationToken ct = default);
     }
 }

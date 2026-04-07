@@ -29,6 +29,11 @@ namespace OrderManagement.Application.Services.WarhouseUsers
             await _repository.SaveChangesAsync(ct);
         }
 
+        public async Task<WarehouseUser> GetByUserIdAsync(int userId, CancellationToken ct = default)
+        {
+            return await _repository.GetByUserIdAsync(userId, ct);
+        }
+
         public async Task<int?> GetWarehouseIdByUserAsync(int userId, CancellationToken ct = default)
         {
             var warehouseUser = await _repository.GetByUserIdAsync(userId,ct);
