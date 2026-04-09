@@ -1,235 +1,189 @@
 # 🏗 Order Management System API
 
-A production-style **ASP.NET Core Web API** built using Clean Architecture principles.  
-The system simulates a real-world warehouse & order lifecycle with authentication, role-based authorization, and ownership-based access control.
+A production-style ASP.NET Core Web API built using Clean Architecture principles.  
+The system simulates a real-world e-commerce backend that manages the complete order lifecycle and warehouse operations.  
+It handles authentication, product management, stock control, order processing, and secure multi-role access across different system actors.
+
+---
+
+## 💡 System Overview
+
+This project represents a simplified e-commerce and warehouse management system, including:
+
+- Full order lifecycle management (create → confirm → cancel → ship → complete)  
+- Warehouse management system with stock tracking per warehouse  
+- Multi-role system (SuperAdmin, WarehouseAdmin, Employee, Customer)  
+- Secure authentication and advanced authorization (role-based + ownership-based)  
+- Business rule enforcement inside the service layer  
 
 ---
 
 ## 🚀 Tech Stack
 
-- ASP.NET Core Web API
-- Entity Framework Core
-- SQL Server
-- JWT Authentication
-- BCrypt Password Hashing
-- Clean Architecture
-- Role-Based Authorization
-- Ownership-Based Access Control
-- Optimistic Concurrency (RowVersion)
+- ASP.NET Core Web API  
+- Entity Framework Core  
+- SQL Server  
+- JWT Authentication  
+- BCrypt Password Hashing  
+- Clean Architecture  
+- Role-Based Authorization  
+- Ownership-Based Access Control  
+- Optimistic Concurrency (RowVersion)  
+- Redis (Caching)  
+- Serilog + Seq (Logging & Monitoring)  
 
 ---
 
 ## 🧱 Architecture
 
-The project follows **Clean Architecture**:
+The project follows Clean Architecture:
 
-```
-Domain
-Application
-Infrastructure
-API
-```
+Domain  
+Application  
+Infrastructure  
+API  
 
-### 🔹 Domain
-- Core entities
-- Enums
-- Business rules
-- No external dependencies
+### Domain
+- Core entities  
+- Enums  
+- Business rules  
 
-### 🔹 Application
-- Services
-- Interfaces (Repositories + Services)
-- DTOs
-- Business Logic
-- Validation
-- Ownership Authorization Logic
+### Application
+- Services  
+- Interfaces  
+- DTOs  
+- Business Logic  
+- Validation  
+- Ownership Authorization  
 
-### 🔹 Infrastructure
-- EF Core
-- Repository implementations
-- Entity configurations
-- Database persistence
+### Infrastructure
+- EF Core  
+- Database persistence  
+- Redis caching  
+- Cancellation Tokens
 
-### 🔹 API
-- Controllers
-- JWT configuration
-- Middleware
-- Global exception handling
+### API
+- Controllers  
+- Middleware  
+- JWT configuration  
+- Logging (Serilog)  
+
+---
+
+## ⚡ Performance Optimization
+
+- Implemented Redis caching to reduce database load and improve response time  
+- Used async/await for better performance and scalability  
+
+---
+
+## 📊 Logging & Monitoring
+
+- Structured logging using Serilog  
+- Centralized logging using Seq  
+- Supports debugging, tracing, and monitoring  
 
 ---
 
 ## 🔐 Authentication & Authorization
 
-### JWT Authentication
-- Custom JWT implementation
-- Secret stored in Environment Variable
-- Claims included:
-  - UserId
-  - Role
-  - WarehouseId (when applicable)
+- JWT Authentication with custom claims  
+- Role-based authorization  
+- Ownership-based access control enforced in service layer  
+-  Refresh Tokens to improve user exceprince
 
-### Roles Hierarchy
-
-- **SuperAdmin**
-  - Full system access
-  - Creates Warehouse Admins
-
-- **WarehouseAdmin**
-  - Manages one warehouse
-  - Can create Employees for their warehouse
-
-- **WarehouseEmployee**
-  - Manages orders inside assigned warehouse
-
-- **Customer**
-  - Creates orders
-  - Can only access their own orders
-
----
-
-## 🧠 Ownership-Based Authorization
-
-Not just role-based access.
-
-Business-level ownership checks ensure:
-
-- Customers only access their own orders
-- Warehouse admins/employees only access their warehouse data
-- SuperAdmin bypasses ownership checks
-
-Ownership validation is implemented inside the **Service Layer**, not Controllers.
+Roles:
+- SuperAdmin → full access  
+- WarehouseAdmin → manages warehouse  
+- Employee → manages orders  
+- Customer → manages own orders  
 
 ---
 
 ## 📦 Core Modules
 
-### 👤 Users
-- Registration (Customer only)
-- Login
-- Role hierarchy
-- Warehouse assignment
+Users:
+- Registration & Login  
+- Role management  
 
-### 🏬 Warehouses
-- Managed by SuperAdmin
-- Linked to Admin/Employees
+Warehouses:
+- Managed by admins  
+- Linked to employees  
 
-### 📦 Products
-- SKU uniqueness
-- Soft delete (IsDeleted)
-- Concurrency control using RowVersion
+Products:
+- SKU uniqueness  
+- Soft delete  
+- Concurrency control  
 
-### 📊 Stock Management
-- ProductStock table
-- Unique (ProductId + WarehouseId)
-- Add / Deduct stock
-- Quantity validation
+Stock:
+- Per warehouse tracking  
+- Add / Deduct logic  
 
-### 🧾 Orders
-- Full lifecycle:
-  - Create
-  - Confirm
-  - Cancel
-  - Ship
-  - Complete
-- Status stored as string enum
-- Stock deducted on confirm
-- Ownership enforced
+Orders:
+- Full lifecycle  
+- Ownership enforced  
+- Stock updates on confirm  
 
 ---
 
 ## 🛡 Security Features
 
-- BCrypt password hashing
-- JWT token validation
-- Role-based authorization
-- Ownership-based business validation
-- Global exception handling middleware
-- Optimistic concurrency using RowVersion
-- Soft delete query filters
+- BCrypt password hashing  
+- JWT validation  
+- Role & ownership authorization  
+- Global exception handling  
+- Optimistic concurrency  
+- Soft delete filters  
 
 ---
 
-## 🗄 Database Design Highlights
+## 🗄 Database Design
 
-- Unique indexes (Email, SKU)
-- Foreign key constraints
-- Restrict delete behaviors
-- Soft delete (IsDeleted)
-- Query filters
-- Optimistic concurrency tokens
-- Warehouse-User mapping table
+- Unique indexes (Email, SKU)  
+- Foreign keys  
+- Query filters  
+- Concurrency tokens  
 
 ---
 
 ## 🧪 Example Flow
 
-1. SuperAdmin is seeded automatically.
-2. SuperAdmin creates WarehouseAdmin.
-3. WarehouseAdmin creates Employees.
-4. Customer registers and creates order.
-5. WarehouseEmployee confirms and ships order.
-6. Ownership rules prevent cross-warehouse access.
+1. SuperAdmin is seeded  
+2. Creates WarehouseAdmin  
+3. Admin creates Employees  
+4. Customer creates order  
+5. Employee processes order  
+6. Ownership rules enforced  
 
 ---
 
 ## ⚙ Configuration
 
-### Environment Variable
-
-```
+Environment Variable:
 JWT_SECRET_KEY=YourStrongSecretKeyHere
-```
 
-### appsettings.json
-
-```
+appsettings.json:
 "JwtSettings": {
   "Issuer": "OrderManagementAPI",
   "Audience": "OrderManagementClient"
 }
-```
 
 ---
 
 ## 📌 What Makes This Project Strong
 
-- Clean separation of concerns
-- Removed Generic Repository anti-pattern
-- Business rules enforced in Service layer
-- Proper role hierarchy
-- Ownership validation
-- Optimistic concurrency handling
-- Extensible and scalable structure
+- Clean Architecture  
+- Real-world business logic  
+- Ownership-based authorization  
+- Performance optimization (Redis)  
+- Production-level logging  
+- Scalable design  
 
 ---
 
 ## 🔮 Future Improvements
 
-- Refresh Tokens
-- Rate Limiting
-- Policy-based Authorization
-- Audit logging
-- Unit & Integration Tests
-- Docker support
-- CI/CD pipeline
+- Unit & Integration Tests  
+- Docker  
+- CI/CD  
 
----
-
-## 📈 Project Level
-
-Advanced Junior / Early Mid-Level Backend Project
-
-Designed to demonstrate strong understanding of:
-
-- Clean Architecture
-- Secure API design
-- Authorization design patterns
-- Business rule enforcement
-- Proper refactoring practices
-- Scalable backend architecture
-
----
-
-## 👨‍💻 Author
-
-Built as a backend architecture exercise focused on real-world design patterns, scalability, and clean design principles.
